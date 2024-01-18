@@ -9,6 +9,8 @@ Version: 6.1.0
 from discord.ext import commands
 from discord.ext.commands import Context
 
+import discord
+
 
 
 # Here we name the cog and create a new class for the cog.
@@ -22,6 +24,7 @@ class Template(commands.Cog, name="template"):
         name="testcommand",
         description="This is a testing command that does nothing.",
     )
+    @discord.app_commands.guilds(discord.Object(id=1195656096505938040))
     async def testcommand(self, context: Context) -> None:
         """
         This is a testing command that does nothing.

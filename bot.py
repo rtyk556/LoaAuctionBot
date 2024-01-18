@@ -1,8 +1,7 @@
-
 import discord
 from discord.ext import commands
 
-discord_token = 'MTE5NTk5OTk4NzU1ODAwMjcyOA.GD_GwW.dfcIp2XED8wAv_J53rw0qnb7VXPWGXtU1eCx1U'
+TOKEN = 'MTE5NTk5OTk4NzU1ODAwMjcyOA.GD_GwW.dfcIp2XED8wAv_J53rw0qnb7VXPWGXtU1eCx1U'
 
 # discord Client class를 생성합니다.
 # client = discord.Client(intents=discord.Intents.default())
@@ -13,12 +12,10 @@ bot = commands.Bot(command_prefix='>', intents=intents)
 
 @bot.event
 async def on_ready():
-    text_channel_list = []
     for guild in bot.guilds:
         for channel in guild.text_channels:
-            text_channel_list.append(channel)
             await channel.send('디코 봇 이제 켜짐')
-    
+
 
 embed = discord.Embed(
     title="Embed Title",
@@ -132,7 +129,7 @@ async def on_message(message):
     # 명령어 처리를 위해 필요한 코드 추가
     await bot.process_commands(message)
 
-bot.run(discord_token)
+bot.run(TOKEN)
 
 # # event decorator를 설정하고 on_ready function을 할당해줍니다.
 # @client.event
