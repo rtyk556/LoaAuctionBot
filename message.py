@@ -1,7 +1,7 @@
 import discord
 
 
-message = {
+first_message = {
   "embeds": 
     {
       "id": 652627557,
@@ -68,6 +68,25 @@ message = {
   }
 }
 
+api_message = {
+      "id": 373725794,
+      "description": "⛔ API를 알림 설정용으로 사용하게 되면 서버 상에서 상시로 경매장 검색이 돌아가기 때문에 100회 제한에 계속 걸리게 됩니다.\n알림 설정을 하신다면 그 용도로 따로 API를 분리해서 사용하시고 다른 사이트에선 다른 API를 사용하시는 걸 추천 드립니다. ⛔",
+      "fields": [
+        {
+          "id": 253592701,
+          "name": "API 조회",
+          "value": "등록한 API의 이름과 값을 확인할 수 있습니다. "
+        },
+        {
+          "id": 346272862,
+          "name": "API 등록",
+          "value": "API의 이름과 값을 등록합니다."
+        }
+      ],
+      "author": {
+        "name": "API 관리"
+      }
+    }
 
 # button_components = [
 #   [
@@ -94,18 +113,19 @@ message = {
 #     await interaction.message.edit(content="알림 설정 버튼 클릭됨")
 
 class FirstView(discord.ui.View):
-    embed = discord.Embed.from_dict(message["embeds"])
+    embed = discord.Embed.from_dict(first_message["embeds"])
     def __init__(self):
         super().__init__()
         
 
     @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
     async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(content="api 버튼 클릭됨", embed=None)
+        view = APIView()
+        await interaction.response.edit_message(embed=view.embed, view=view)
       ## 메시지 수정하면 content, embed, view는 따로 가져가는 것 같다. 필요한 요소인 embed와 view만 수정하는 방식으로 진행하면 될 듯
 
     @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.primary)
-    async def button_noti(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def button_notification(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(content="알림 설정 버튼 클릭됨", embed=None)
     
     @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
@@ -114,14 +134,24 @@ class FirstView(discord.ui.View):
         
         
 class APIView(discord.ui.View):
+    embed = discord.Embed.from_dict(api_message)
     def __init__(self):
         super().__init__()
-        self.embed = None
+        
 
-    @discord.ui.button(label='등록한 API 확인', style=discord.ButtonStyle.primary)
-    async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(label='API 조회', style=discord.ButtonStyle.primary)
+    async def button_check_api(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(content="api 버튼 클릭됨", embed=None)
-      ## 메시지 수정하면 content, embed, view는 따로 가져가는 것 같다. 필요한 요소인 embed와 view만 수정하는 방식으로 진행하면 될 것
+     
+    @discord.ui.button(label='API 등록', style=discord.ButtonStyle.primary)
+    async def button_register_api(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(content="api 버튼 클릭됨", embed=None)
+    
+    @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+    async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+        view = FirstView()
+        await interaction.response.edit_message(embed=view.embed, view=view)
+    
 
 
 # class SearchAuctionButton(discord.ui.view):
