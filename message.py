@@ -88,6 +88,14 @@ api_message = {
       }
     }
 
+
+select_acce_type_message = {
+      "id": 373725794,
+      "description": "⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n검색하고자 하는 장신구 종류를 골라주세요 (동시 선택 가능)",
+      "fields": [],
+      "title": "경매장 매물 알림 설정"
+    }
+
 # button_components = [
 #   [
 #     discord.ui.Button(style=discord.ButtonStyle.blurple, label="파란 버튼"),
@@ -120,17 +128,19 @@ class FirstView(discord.ui.View):
 
     @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
     async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
-        view = APIView()
-        await interaction.response.edit_message(embed=view.embed, view=view)
       ## 메시지 수정하면 content, embed, view는 따로 가져가는 것 같다. 필요한 요소인 embed와 view만 수정하는 방식으로 진행하면 될 듯
+      view = APIView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+      
 
     @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.primary)
     async def button_notification(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(content="알림 설정 버튼 클릭됨", embed=None)
+      await interaction.response.edit_message(content="알림 설정 버튼 클릭됨", embed=None)
     
     @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
     async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(content="매물 검색 버튼 클릭됨", embed=None)
+      view = NotiAcceTypeView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
         
         
 class APIView(discord.ui.View):
@@ -152,6 +162,45 @@ class APIView(discord.ui.View):
         view = FirstView()
         await interaction.response.edit_message(embed=view.embed, view=view)
     
+class NotiAcceTypeView(discord.ui.View):
+    embed = discord.Embed.from_dict(select_acce_type_message)
+    def __init__(self):
+        super().__init__()
+    
+    @discord.ui.select(placeholder="장신구 종류",
+                       min_values=1, max_values=3,
+                       options=[
+                          discord.SelectOption(
+                              label="목걸이",
+                          ),
+                          discord.SelectOption(
+                              label="귀걸이",
+                          ),
+                          discord.SelectOption(
+                              label="팔찌",
+                          ),
+                       ])
+    async def select_callback(self, interaction, select): # the function called when the user is done selecting options
+      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
+      pass
+    
+    
+    @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
+    async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+      # from bot import first_view
+      # await interaction.response.edit_message(embed=first_view.embed, view = first_view)
+    
+    @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
+    async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
+      await interaction.response.edit_message(content="Not implemented", embed=None)
+    
+    @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+    async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+
 
 
 # class SearchAuctionButton(discord.ui.view):
