@@ -120,7 +120,8 @@ async def button_command(ctx):
 @bot.command()
 async def test(ctx:commands.context):
     print(ctx)
-    await ctx.send(embed=message.embed_message, view=message.FirstPage())
+    view = message.FirstView()
+    await ctx.send(embed=view.embed, view=view)
 
 @bot.event
 async def on_message(message):
