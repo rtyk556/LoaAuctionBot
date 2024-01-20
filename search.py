@@ -1,8 +1,10 @@
 import requests
 import json
 import searchoption
+import math
+import token_value
 
-Token = 'bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IktYMk40TkRDSTJ5NTA5NWpjTWk5TllqY2lyZyIsImtpZCI6IktYMk40TkRDSTJ5NTA5NWpjTWk5TllqY2lyZyJ9.eyJpc3MiOiJodHRwczovL2x1ZHkuZ2FtZS5vbnN0b3ZlLmNvbSIsImF1ZCI6Imh0dHBzOi8vbHVkeS5nYW1lLm9uc3RvdmUuY29tL3Jlc291cmNlcyIsImNsaWVudF9pZCI6IjEwMDAwMDAwMDAwMDI1MjYifQ.RgOJJ-Gm2sQ-JXCNGkdS0HTxZhy4TEgtevVdXUI2UkP6iT394RB202sr59rymyTlf3RzkZYA2wc8XHKJyvf8NOuMBPzj7ppI68gn1UMxNg-_E5R4XhY02YsNzuP-m7zSgVk47SqwvaFIf-AMXdmTje40eQS708xg2316ysxRuLScl5xkDA3yoHG-_tXN6sKy1SLn2nwhBReMYEL3jb-C6tk8c-vAN-uwiUGTo6mDz6nKAsUnmyN3jyeboGqfRxf5LOxtFxHsgd1bj1VX0Zxr4gQI3X50NKmhq6usMjzP4OxJY3MylR9p7pO3l1YDN5gfPhmE6rlChfpaggQS9y6DLA'
+Token = token_value.API_TOKEN
 
 headers = {
     'accept' : 'application/json',
@@ -15,7 +17,7 @@ search_option = searchoption.SearchOption().searchOption
 label = searchoption.OptionLabel()
 
 search_option = {
-    'ItemGradeQuality' : 70,
+    'ItemGradeQuality' : 80,
     'Sort': 'BIDSTART_PRICE',
     'CategoryCode': 200030, # 200000 - 장신구, 200030 - 반지
     'EtcOptions' : [
@@ -106,12 +108,12 @@ subOption = ["예리한 둔기", "저주받은 인형"]
 rst = []
 
 if totalNum != 0:
-    for i in range(totalNum//pageSize + 1):
+    for i in range(math.ceil(totalNum/pageSize)):
         print(i)
         # option = get_search_option(pageNo=i+1)
         option = get_search_option(ItemGradeQuality=80, pageNo=i+1, Category=200030)
         jsonObject = get_response_json(option) ## 1분 100회 제한 생각 -> 1분에 1000개 리밋으로 매물 검색 가능할듯
-    
+
         for obj in jsonObject.get('Items'):
             obj_options = obj.get('Options')
             for opt in obj_options:

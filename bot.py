@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
-
+import token_value
 import message
 
-TOKEN = 'MTE5NTk5OTk4NzU1ODAwMjcyOA.GD_GwW.dfcIp2XED8wAv_J53rw0qnb7VXPWGXtU1eCx1U'
+TOKEN = token_value.BOT_TOKEN
 
 # discord Client class를 생성합니다.
 # client = discord.Client(intents=discord.Intents.default())
