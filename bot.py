@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+import message
+
 TOKEN = 'MTE5NTk5OTk4NzU1ODAwMjcyOA.GD_GwW.dfcIp2XED8wAv_J53rw0qnb7VXPWGXtU1eCx1U'
 
 # discord Client class를 생성합니다.
@@ -118,7 +120,8 @@ async def button_command(ctx):
 @bot.command()
 async def test(ctx:commands.context):
     print(ctx)
-    await ctx.send(content=emb_Test["content"],embed=discord.Embed.from_dict(emb_Test["embeds"]))
+    view = message.FirstView()
+    await ctx.send(embed=view.embed, view=view)
 
 @bot.event
 async def on_message(message):
