@@ -121,26 +121,35 @@ select_acce_type_message = {
 #     await interaction.message.edit(content="알림 설정 버튼 클릭됨")
 
 class FirstView(discord.ui.View):
-    embed = discord.Embed.from_dict(first_message["embeds"])
-    def __init__(self):
-        super().__init__()
-        
-
-    @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
-    async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
-      ## 메시지 수정하면 content, embed, view는 따로 가져가는 것 같다. 필요한 요소인 embed와 view만 수정하는 방식으로 진행하면 될 듯
-      view = APIView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
-      
-
-    @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.primary)
-    async def button_notification(self, interaction: discord.Interaction, button: discord.ui.Button):
-      await interaction.response.edit_message(content="알림 설정 버튼 클릭됨", embed=None)
+  # __instance = None
+  
+  embed = discord.Embed.from_dict(first_message["embeds"])
+  def __init__(self):
+      # if FirstView.__instance:
+      #   self.getInstance()
+      super().__init__()
     
-    @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
-    async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
-      view = NotiAcceTypeView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
+  # @classmethod
+  # def getInstance(cls):
+  #   if not cls.__instance:
+  #     cls.__instance = FirstView()
+  #   return cls.__instance
+
+  @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
+  async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
+    ## 메시지 수정하면 content, embed, view는 따로 가져가는 것 같다. 필요한 요소인 embed와 view만 수정하는 방식으로 진행하면 될 듯
+    view = APIView()
+    await interaction.response.edit_message(embed=view.embed, view=view)
+    
+
+  @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.primary)
+  async def button_notification(self, interaction: discord.Interaction, button: discord.ui.Button):
+    await interaction.response.edit_message(content="알림 설정 버튼 클릭됨", embed=None)
+  
+  @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
+  async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = NotiAcceTypeView()
+    await interaction.response.edit_message(embed=view.embed, view=view)
         
         
 class APIView(discord.ui.View):
@@ -163,9 +172,18 @@ class APIView(discord.ui.View):
         await interaction.response.edit_message(embed=view.embed, view=view)
     
 class NotiAcceTypeView(discord.ui.View):
+    # __instance = None
     embed = discord.Embed.from_dict(select_acce_type_message)
     def __init__(self):
-        super().__init__()
+      # if NotiAcceTypeView.__instance:
+      #   self.getInstance()
+      super().__init__()
+    
+    # @classmethod
+    # def getInstance(cls):
+    #   if not cls.__instance:
+    #     cls.__instance = NotiAcceTypeView()
+    #   return cls.__instance
     
     @discord.ui.select(placeholder="장신구 종류",
                        min_values=1, max_values=3,
@@ -189,8 +207,8 @@ class NotiAcceTypeView(discord.ui.View):
     async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
       await interaction.response.edit_message(embed=view.embed, view=view)
-      # from bot import first_view
-      # await interaction.response.edit_message(embed=first_view.embed, view = first_view)
+      # view = FirstView.getInstance()
+      # await interaction.response.edit_message(embed=view.embed, view = view)
     
     @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
     async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
