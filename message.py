@@ -1,3 +1,4 @@
+from typing import Optional
 import discord
 
 
@@ -95,6 +96,16 @@ select_acce_type_message = {
       "fields": [],
       "title": "경매장 매물 알림 설정"
     }
+
+def get_main_opt_message(engrave:str = '미입력'):
+  main_option_message = {
+      "id": 373725794,
+      "description": f"⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n반드시 검색에 포함될 메인 각인과 최소값, 최대값을 입력해주세요.\n\n **현재 입력된 메인 각인 : __{engrave}__**",
+      "fields": [],
+      "title": "필수 각인 검색 설정"
+    }
+  return main_option_message
+  
 
 # button_components = [
 #   [
@@ -212,14 +223,96 @@ class NotiAcceTypeView(discord.ui.View):
     
     @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
     async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
-      await interaction.response.edit_message(content="Not implemented", embed=None)
+      view = NotiMainOptView()
+      await interaction.response.edit_message(embed=view.emb, view=view)
+      # await interaction.response.edit_message(content="Not implemented", embed=None)
     
     @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
     async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
       await interaction.response.edit_message(embed=view.embed, view=view)
 
+class NotiMainOptView(discord.ui.View):
+  emb = discord.Embed.from_dict(get_main_opt_message())
+  def __init__(self, engrave: str='미입력' ):
+    super().__init__()
+    self.emb=discord.Embed.from_dict(get_main_opt_message(engrave))
+  
+  def search_engrave(self, engrave):
+    pass
+  
+  @discord.ui.select(placeholder="각인 최소값",
+                       min_values=1, max_values=1,
+                       options=[
+                          discord.SelectOption(
+                              label="제한 없음",
+                          ),
+                          discord.SelectOption(
+                              label="3",
+                          ),
+                          discord.SelectOption(
+                              label="4",
+                          ),
+                          discord.SelectOption(
+                              label="5",
+                          ),
+                          discord.SelectOption(
+                              label="6",
+                          ),
+                       ])
+  async def select_minEngrave(self, interaction, select):
+      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
+      pass
+  
+  @discord.ui.select(placeholder="각인 최대값",
+                       min_values=1, max_values=1,
+                       options=[
+                          discord.SelectOption(
+                              label="제한 없음",
+                          ),
+                          discord.SelectOption(
+                              label="3",
+                          ),
+                          discord.SelectOption(
+                              label="4",
+                          ),
+                          discord.SelectOption(
+                              label="5",
+                          ),
+                          discord.SelectOption(
+                              label="6",
+                          ),
+                       ])
+  async def select_maxEngrave(self, interaction, select):
+      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
+      pass
+  
+  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.primary)
+  async def button_main_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
+      modal = MainOptModal()
+      await interaction.response.send_modal(modal)
 
+  @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
+  async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = NotiAcceTypeView()
+    await interaction.response.edit_message(embed=view.embed, view=view)
+  
+  @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
+  async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
+    await interaction.response.edit_message(content="Not implemented", embed=None)
+  
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = FirstView()
+    await interaction.response.edit_message(embed=view.embed, view=view)
+
+class MainOptModal(discord.ui.Modal, title="메인 각인"):
+    mainEngrave = discord.ui.TextInput(label="메인 옵션을 골라주세요.", placeholder="검색에 반드시 포함될 메인 각인을 골라주세요.")
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        view = NotiMainOptView(engrave=self.mainEngrave)
+        await interaction.response.edit_message(embed=view.emb, view=view)
+  
 
 # class SearchAuctionButton(discord.ui.view):
 #   def __init__(self):
