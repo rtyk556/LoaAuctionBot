@@ -92,26 +92,44 @@ api_message = {
 
 select_acce_type_message = {
       "id": 373725794,
-      "description": "⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n검색하고자 하는 장신구 종류를 골라주세요 (동시 선택 가능)",
+      "description": "⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n검색하고자 하는 장신구 종류를 골라 주세요 (동시 선택 가능)",
       "fields": [],
       "title": "경매장 매물 알림 설정"
     }
 
 def get_main_opt_message(engrave:str = '미입력'):
   main_option_message = {
-      "description": f"⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n반드시 검색에 포함될 메인 각인과 최소값, 최대값을 입력해주세요.\n\n **현재 입력된 메인 각인 : __{engrave}__**",
-      "fields": [],
+      "description": f"⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n반드시 검색에 포함될 메인 각인과 최소값, 최대값을 입력해 주세요.\n\n",
+      "fields": [
+        {
+          "id": 531054326,
+          "name": "현재 입력된 메인 각인",
+          "value": f"**{engrave}**"
+        }
+      ],
       "title": "필수 각인 검색 설정"
     }
   return main_option_message
 
 def get_etc_opt_message(engrave_list:list = []):
   etc_option_message = {
-      "description": f"⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n검색에 포함될 다른 각인(복수 선택 가능)과 품질, 스탯, 아이템 등급을 입력해주세요.\n\n **현재 입력된 각인 목록 : __{engrave_list}__**",
-      "fields": [],
-      "title": "부가 요소 검색 설정"
+      "description": f"⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n검색에 포함될 다른 각인(복수 선택 가능)과 스탯을 입력해 주세요.\n\n",
+      "fields": [
+        {
+          "id": 531054327,
+          "name": "현재 입력된 각인 목록",
+          "value": f"**{engrave_list}**"
+        }
+      ],
+      "title": "부가 요소 검색 설정 ( 1/2 )"
   }
   return etc_option_message
+
+etc_2nd_option_message = {
+      "description": f"⛔ 알림 설정 용으로 등록된 API는 계속 100회 제한까지 사용하니 전용 API로 따로 구분하시길 바랍니다.\n\n품질과 아이템 등급, 정렬 기준을 선택해 주세요.\n\n",
+      "fields": [],
+      "title": "부가 요소 검색 설정 ( 2/2 )"
+  }
 
 # button_components = [
 #   [
@@ -365,6 +383,101 @@ class NotiEtcOptView(discord.ui.View):
       # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
       pass
   
+  @discord.ui.select(placeholder="스탯",
+                       min_values=1, max_values=1,
+                       options=[
+                          discord.SelectOption(
+                              label="치명",
+                          ),
+                          discord.SelectOption(
+                              label="특화",
+                          ),
+                          discord.SelectOption(
+                              label="제압",
+                          ),
+                          discord.SelectOption(
+                              label="신속",
+                          ),
+                          discord.SelectOption(
+                              label="인내",
+                          ),
+                          discord.SelectOption(
+                              label="숙련",
+                          )
+                       ])
+  async def select_mainStat(self, interaction, select):
+      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
+      pass
+  
+  @discord.ui.select(placeholder="목걸이용 서브 스탯",
+                       min_values=1, max_values=1,
+                       options=[
+                          discord.SelectOption(
+                              label="치명",
+                          ),
+                          discord.SelectOption(
+                              label="특화",
+                          ),
+                          discord.SelectOption(
+                              label="제압",
+                          ),
+                          discord.SelectOption(
+                              label="신속",
+                          ),
+                          discord.SelectOption(
+                              label="인내",
+                          ),
+                          discord.SelectOption(
+                              label="숙련",
+                          )
+                       ])
+  async def select_subStat(self, interaction, select):
+      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
+      pass
+  
+  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.primary)
+  async def button_sub_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
+    modal = EtcOptModal()
+    await interaction.response.send_modal(modal)
+
+  @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
+  async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = NotiMainOptView()
+    await interaction.response.edit_message(embed=view.embed, view=view)
+  
+  @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
+  async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = Noti2ndEtcOptView()
+    await interaction.response.edit_message(embed=view.embed, view=view)
+  
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = FirstView()
+    await interaction.response.edit_message(embed=view.embed, view=view)
+
+class EtcOptModal(discord.ui.Modal, title="서브 각인"):
+  sub_1 = discord.ui.TextInput(label="서브 각인 1", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
+  sub_2 = discord.ui.TextInput(label="서브 각인 2", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
+  sub_3 = discord.ui.TextInput(label="서브 각인 3", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
+  
+  async def on_submit(self, interaction: discord.Interaction):
+    subEngrave_list = [self.sub_1.value, self.sub_2.value, self.sub_3.value]
+    view = NotiEtcOptView(subEngrave=[x for x in subEngrave_list if x != ""])
+    await interaction.response.edit_message(embed=view.embed, view=view)
+
+class MainOptModal(discord.ui.Modal, title="메인 각인"):
+    mainEngrave = discord.ui.TextInput(label="메인 옵션을 입력해 주세요.", placeholder="검색에 반드시 포함될 메인 각인을 입력해 주세요.")
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        view = NotiMainOptView(engrave=self.mainEngrave)
+        await interaction.response.edit_message(embed=view.embed, view=view)
+  
+class Noti2ndEtcOptView(discord.ui.View):
+  embed = discord.Embed.from_dict(etc_2nd_option_message)
+  
+  def __init__(self):
+    super().__init__()
+  
   @discord.ui.select(placeholder="품질",
                        min_values=1, max_values=1,
                        options=[
@@ -405,14 +518,23 @@ class NotiEtcOptView(discord.ui.View):
       # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
       pass
   
-  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.primary)
-  async def button_sub_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
-    modal = EtcOptModal()
-    await interaction.response.send_modal(modal)
-
+  @discord.ui.select(placeholder="정렬 기준",
+                       min_values=1, max_values=1,
+                       options=[
+                          discord.SelectOption(
+                              label="입찰가 기준",
+                          ),
+                          discord.SelectOption(
+                              label="구입가 기준",
+                          )
+                       ])
+  async def select_item_grade(self, interaction, select):
+      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
+      pass
+  
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = NotiMainOptView()
+    view = NotiEtcOptView()
     await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
@@ -423,23 +545,6 @@ class NotiEtcOptView(discord.ui.View):
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = FirstView()
     await interaction.response.edit_message(embed=view.embed, view=view)
-
-class EtcOptModal(discord.ui.Modal, title="서브 각인"):
-  sub_1 = discord.ui.TextInput(label="서브 각인 1", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
-  sub_2 = discord.ui.TextInput(label="서브 각인 2", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
-  sub_3 = discord.ui.TextInput(label="서브 각인 3", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
-  
-  async def on_submit(self, interaction: discord.Interaction):
-    subEngrave_list = [self.sub_1.value, self.sub_2.value, self.sub_3.value]
-    view = NotiEtcOptView(subEngrave=[x for x in subEngrave_list if x != ""])
-    await interaction.response.edit_message(embed=view.embed, view=view)
-
-class MainOptModal(discord.ui.Modal, title="메인 각인"):
-    mainEngrave = discord.ui.TextInput(label="메인 옵션을 입력해 주세요.", placeholder="검색에 반드시 포함될 메인 각인을 입력해 주세요.")
-    
-    async def on_submit(self, interaction: discord.Interaction):
-        view = NotiMainOptView(engrave=self.mainEngrave)
-        await interaction.response.edit_message(embed=view.embed, view=view)
   
 
 # class SearchAuctionButton(discord.ui.view):
