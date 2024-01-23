@@ -407,8 +407,8 @@ class NotiEtcOptView(discord.ui.View):
   
   @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.primary)
   async def button_sub_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
-      modal = MainOptModal()
-      await interaction.response.send_modal(modal)
+    modal = EtcOptModal()
+    await interaction.response.send_modal(modal)
 
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -423,10 +423,19 @@ class NotiEtcOptView(discord.ui.View):
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = FirstView()
     await interaction.response.edit_message(embed=view.embed, view=view)
+
+class EtcOptModal(discord.ui.Modal, title="서브 각인"):
+  sub_1 = discord.ui.TextInput(label="서브 각인 1", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
+  sub_2 = discord.ui.TextInput(label="서브 각인 2", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
+  sub_3 = discord.ui.TextInput(label="서브 각인 3", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
   
+  async def on_submit(self, interaction: discord.Interaction):
+    subEngrave_list = [self.sub_1.value, self.sub_2.value, self.sub_3.value]
+    view = NotiEtcOptView(subEngrave=[x for x in subEngrave_list if x != ""])
+    await interaction.response.edit_message(embed=view.embed, view=view)
 
 class MainOptModal(discord.ui.Modal, title="메인 각인"):
-    mainEngrave = discord.ui.TextInput(label="메인 옵션을 골라주세요.", placeholder="검색에 반드시 포함될 메인 각인을 골라주세요.")
+    mainEngrave = discord.ui.TextInput(label="메인 옵션을 입력해 주세요.", placeholder="검색에 반드시 포함될 메인 각인을 입력해 주세요.")
     
     async def on_submit(self, interaction: discord.Interaction):
         view = NotiMainOptView(engrave=self.mainEngrave)
