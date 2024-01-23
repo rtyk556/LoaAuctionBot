@@ -528,7 +528,7 @@ class Noti2ndEtcOptView(discord.ui.View):
                               label="구입가 기준",
                           )
                        ])
-  async def select_item_grade(self, interaction, select):
+  async def select_sort_option(self, interaction, select):
       # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
       pass
   
