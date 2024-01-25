@@ -1,6 +1,6 @@
 from typing import Optional
 import discord
-
+import jsonobject
 
 first_message = {
   "embeds": 
@@ -205,7 +205,8 @@ class APIView(discord.ui.View):
     async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
         view = FirstView()
         await interaction.response.edit_message(embed=view.embed, view=view)
-    
+
+
 class NotiAcceTypeView(discord.ui.View):
     # __instance = None
     embed = discord.Embed.from_dict(select_acce_type_message)
@@ -225,17 +226,41 @@ class NotiAcceTypeView(discord.ui.View):
                        options=[
                           discord.SelectOption(
                               label="목걸이",
+                              value=jsonobject.AccesoryType.necklace,
+                              default=False
                           ),
                           discord.SelectOption(
                               label="귀걸이",
+                              value=jsonobject.AccesoryType.earring,
+                              default=False
                           ),
                           discord.SelectOption(
-                              label="팔찌",
+                              label="반지",
+                              value=jsonobject.AccesoryType.ring,
+                              default=False
                           ),
                        ])
-    async def select_callback(self, interaction, select): # the function called when the user is done selecting options
+    async def select_acce_type(self, interaction:discord.Interaction, select: discord.ui.Select): # the function called when the user is done selecting options
       # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+      # 선택한 값을 가져옴 (목걸이, 귀걸이, 팔찌) -> 검색 옵션 중에 저장함(dict 형태?). -> 나중에 검색 옵션 다 가져오면 그 값대로 검색
+      #   dict를 하면 장점 - 저장이 쉽다. 단점 - key를 text로 하거나 enum으로 입력해야함. 나중에 문제 일으키기 쉬움
+      #   class로 하면 장점 - 내가 직접 요소들 다 지정하면 문제 발견 쉬움 단점 - 하나의 인스턴스로 만들어서 계속 가지고 관리해야함. 싱글톤하면 처음 화면으로 돌아갈 때 문제가 될 것. 그냥 인스턴스면 어떻게 다음 과정으로 옮겨줄지 난감
+      # 선택을 해야 다음 버튼 활성화. 선택 값을 조회해서 값이 유효하면 활성화 하는 방식으로 진행. 아니면 disable로 만들기
+      container = jsonobject.SearchOptionContaitner()
+      for option in self.select_acce_type.options:
+          option.default = False
+      if len(select.values) != 0:
+        self.button_next.disabled = False
+        container.acceType = [int(x) for x in select.values]
+        for value in select.values:
+          if int(value) == jsonobject.AccesoryType.necklace:
+            self.select_acce_type.options[0].default = True
+          elif int(value) == jsonobject.AccesoryType.earring:
+            self.select_acce_type.options[1].default = True
+          elif int(value) == jsonobject.AccesoryType.ring:
+            self.select_acce_type.options[2].default = True
+      await interaction.response.edit_message(embed=self.embed, view=self)
+      # await interaction.response.defer()
     
     
     @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
@@ -245,7 +270,7 @@ class NotiAcceTypeView(discord.ui.View):
       # view = FirstView.getInstance()
       # await interaction.response.edit_message(embed=view.embed, view = view)
     
-    @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
+    @discord.ui.button(label='-->', style=discord.ButtonStyle.primary, disabled=True)
     async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = NotiMainOptView()
       await interaction.response.edit_message(embed=view.embed, view=view)
