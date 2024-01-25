@@ -10,6 +10,8 @@ class SearchOptionContaitner():
   def __init__(self):
      self.acceType = []
      self.mainEngrave = None
+     self.mainEngraveMin = 3
+     self.mainEngraveMax = 6
      self.lock = asyncio.Lock()
   
   def isNecklace(self):

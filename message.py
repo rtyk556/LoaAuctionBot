@@ -313,9 +313,6 @@ class NotiMainOptView(discord.ui.View):
                        min_values=1, max_values=1,
                        options=[
                           discord.SelectOption(
-                              label="제한 없음"
-                          ),
-                          discord.SelectOption(
                               label="3",
                           ),
                           discord.SelectOption(
@@ -329,15 +326,19 @@ class NotiMainOptView(discord.ui.View):
                           ),
                        ])
   async def select_minEngrave(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_minEngrave.options:
+      option.default = False
+    
+    if len(select.values) != 0:
+      jsonobject.SearchOptionContaitner.mainEngraveMin = int(select.values[0])
+      for option in self.select_minEngrave.options:
+        if option.label == select.values[0]:
+          option.default = True
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="각인 최대값",
                        min_values=1, max_values=1,
                        options=[
-                          discord.SelectOption(
-                              label="제한 없음"
-                          ),
                           discord.SelectOption(
                               label="3",
                           ),
@@ -352,10 +353,17 @@ class NotiMainOptView(discord.ui.View):
                           ),
                        ])
   async def select_maxEngrave(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_maxEngrave.options:
+      option.default = False
+      
+    if len(select.values) != 0:
+      jsonobject.SearchOptionContaitner.mainEngraveMax = int(select.values[0])
+      for option in self.select_maxEngrave.options:
+        if option.label == select.values[0]:
+          option.default = True
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
-  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.secondary)
+  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
   async def button_main_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
       modal = MainOptModal()
       await interaction.response.send_modal(modal)
