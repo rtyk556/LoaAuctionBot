@@ -1,3 +1,28 @@
+import enum
+import asyncio
+
+class SearchOptionContaitner():
+  def __new__(cls, *args, **kwargs):
+    if not hasattr(cls, "__instance"):
+      cls.__instance = super().__new__(cls)
+    return cls.__instance
+  
+  def __init__(self):
+     self.acceType = []
+     self.lock = asyncio.Lock()
+  
+  def isNecklace(self):
+    return AccesoryType.necklace in self.acceType
+
+class AccesoryType(int, enum.Enum):
+  necklace = 200010,
+  earring = 200020,
+  ring = 200030
+  
+  def __int__(self) -> int:
+    return self.value
+
+  
 classEngrave= [ {
           "Value": 125,
           "Text": "광기",
