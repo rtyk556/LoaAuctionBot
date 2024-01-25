@@ -285,7 +285,8 @@ class NotiMainOptView(discord.ui.View):
   embed = discord.Embed.from_dict(get_main_opt_message())
   def __init__(self, engrave: str='미입력' ):
     super().__init__()
-    self.embed=discord.Embed.from_dict(get_main_opt_message(self.search_engrave(engrave)))
+    self.input_engrave = self.search_engrave(engrave)
+    self.embed=discord.Embed.from_dict(get_main_opt_message(self.input_engrave))
   
   def search_engrave(self, engrave):
     # 각인 값을 입력받고 스페이스 제거 후에 jsonobject에 있는지 확인
@@ -294,16 +295,16 @@ class NotiMainOptView(discord.ui.View):
     if engrave == '미입력':
       return engrave
 
-    classEngraveStr = [ x.get("Text").replace(" ", "") for x in jsonobject.classEngrave]
+    classEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.classEngrave]
     input_engrave = engrave.replace(" ", "")
-    publicEngraveStr = [ x.get("Text").replace(" ", "") for x in jsonobject.publicEngrave]
+    publicEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.publicEngrave]
     
     if input_engrave in classEngraveStr:
-      print("input engrave is valid in class engrave")
-      return jsonobject.classEngrave[classEngraveStr.index(input_engrave)]
+      jsonobject.SearchOptionContaitner.mainEngrave = jsonobject.classEngrave[classEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.codeValue)
+      return jsonobject.classEngrave[classEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.text)
     elif input_engrave in publicEngraveStr:
-      print("input engrave is valid in public engrave")
-      return jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)]
+      jsonobject.SearchOptionContaitner.mainEngrave = jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.codeValue)
+      return jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.text)
     wrong_message = "각인을 찾을 수 없습니다. 정확한 이름을 입력해주세요."
     return wrong_message
 

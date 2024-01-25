@@ -9,6 +9,7 @@ class SearchOptionContaitner():
   
   def __init__(self):
      self.acceType = []
+     self.mainEngrave = None
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
@@ -24,7 +25,7 @@ class AccesoryType(int, enum.Enum):
 
   
 class EngraveTagType(str, enum.Enum):
-  value = "Value",
+  codeValue = "Value",
   text = "Text",
   className = "class"
 
