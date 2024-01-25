@@ -285,16 +285,34 @@ class NotiMainOptView(discord.ui.View):
   embed = discord.Embed.from_dict(get_main_opt_message())
   def __init__(self, engrave: str='미입력' ):
     super().__init__()
-    self.embed=discord.Embed.from_dict(get_main_opt_message(engrave))
+    self.embed=discord.Embed.from_dict(get_main_opt_message(self.search_engrave(engrave)))
   
   def search_engrave(self, engrave):
-    pass
+    # 각인 값을 입력받고 스페이스 제거 후에 jsonobject에 있는지 확인
+    # 없으면 다시 각인을 입력해달라고 리턴
+    # 있으면 그 각인 이름으로 리턴
+    if engrave == '미입력':
+      return engrave
+
+    classEngraveStr = [ x.get("Text").replace(" ", "") for x in jsonobject.classEngrave]
+    input_engrave = engrave.replace(" ", "")
+    publicEngraveStr = [ x.get("Text").replace(" ", "") for x in jsonobject.publicEngrave]
+    
+    if input_engrave in classEngraveStr:
+      print("input engrave is valid in class engrave")
+      return jsonobject.classEngrave[classEngraveStr.index(input_engrave)]
+    elif input_engrave in publicEngraveStr:
+      print("input engrave is valid in public engrave")
+      return jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)]
+    wrong_message = "각인을 찾을 수 없습니다. 정확한 이름을 입력해주세요."
+    return wrong_message
+
   
   @discord.ui.select(placeholder="각인 최소값",
                        min_values=1, max_values=1,
                        options=[
                           discord.SelectOption(
-                              label="제한 없음",
+                              label="제한 없음"
                           ),
                           discord.SelectOption(
                               label="3",
@@ -317,7 +335,7 @@ class NotiMainOptView(discord.ui.View):
                        min_values=1, max_values=1,
                        options=[
                           discord.SelectOption(
-                              label="제한 없음",
+                              label="제한 없음"
                           ),
                           discord.SelectOption(
                               label="3",
@@ -336,7 +354,7 @@ class NotiMainOptView(discord.ui.View):
       # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
       pass
   
-  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.primary)
+  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.secondary)
   async def button_main_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
       modal = MainOptModal()
       await interaction.response.send_modal(modal)
@@ -494,7 +512,7 @@ class MainOptModal(discord.ui.Modal, title="메인 각인"):
     mainEngrave = discord.ui.TextInput(label="메인 옵션을 입력해 주세요.", placeholder="검색에 반드시 포함될 메인 각인을 입력해 주세요.")
     
     async def on_submit(self, interaction: discord.Interaction):
-        view = NotiMainOptView(engrave=self.mainEngrave)
+        view = NotiMainOptView(engrave=self.mainEngrave.value)
         await interaction.response.edit_message(embed=view.embed, view=view)
   
 class Noti2ndEtcOptView(discord.ui.View):

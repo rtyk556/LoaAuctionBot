@@ -23,6 +23,12 @@ class AccesoryType(int, enum.Enum):
     return self.value
 
   
+class EngraveTagType(str, enum.Enum):
+  value = "Value",
+  text = "Text",
+  className = "class"
+
+
 classEngrave= [ {
           "Value": 125,
           "Text": "광기",
