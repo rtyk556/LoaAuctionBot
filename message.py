@@ -387,8 +387,33 @@ class NotiEtcOptView(discord.ui.View):
   embed = discord.Embed.from_dict(get_etc_opt_message())
   def __init__(self, subEngrave:list = []):
     super().__init__()
-    self.embed = discord.Embed.from_dict(get_etc_opt_message(subEngrave))
+    self.embed = discord.Embed.from_dict(get_etc_opt_message(self.search_engraves(subEngrave)))
 
+  def search_engraves(self, engraves:list):
+    # 각인 값들을 입력받고 스페이스 제거 후에 jsonobject에 있는지 확인
+    # 발견된 각인들을 리스트에 넣기. 없으면 리스트 비우기
+    # 빈 리스트라면 입력된 각인이 없습니다.
+    # 메인과 다른 점은 서브는 굳이 입력하지 않아도 된다는 점.
+    # 따라서 처음에 빈 결과값 리스트를 만들고 검색되면 넣다가 마지막에 결과 리스트를 컨테이너로 전달. 여기서 컨테이너는 코드 리스트를 저장
+    rst_code = []
+    rst_text = []
+    
+    classEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.classEngrave]
+    input_engraves = [engrave.replace(" ", "") for engrave in engraves]
+    publicEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.publicEngrave]
+    
+    for input in input_engraves:
+      if input in classEngraveStr:
+        rst_code.append(jsonobject.classEngrave[classEngraveStr.index(input)].get(jsonobject.EngraveTagType.codeValue))
+        rst_text.append(jsonobject.classEngrave[classEngraveStr.index(input)].get(jsonobject.EngraveTagType.text))
+      elif input in publicEngraveStr:
+        rst_code.append(jsonobject.publicEngrave[publicEngraveStr.index(input)].get(jsonobject.EngraveTagType.codeValue))
+        rst_text.append(jsonobject.publicEngrave[publicEngraveStr.index(input)].get(jsonobject.EngraveTagType.text))
+    jsonobject.SearchOptionContaitner.subEngraves = rst_code
+    if len(rst_text) == 0:
+      return "입력된 각인이 없습니다."
+    return rst_text
+  
   @discord.ui.select(placeholder="각인 최소값",
                        min_values=1, max_values=1,
                        options=[
@@ -487,7 +512,7 @@ class NotiEtcOptView(discord.ui.View):
       # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
       pass
   
-  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.primary)
+  @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
   async def button_sub_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
     modal = EtcOptModal()
     await interaction.response.send_modal(modal)
