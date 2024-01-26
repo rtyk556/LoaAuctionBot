@@ -29,6 +29,7 @@ class SearchOptionContainer():
      self.subEngraveMax = 6
      self.mainStat = None
      self.subStat = None
+     self.quality = ItemGradeQuality.over50
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
@@ -41,12 +42,19 @@ class AccesoryType(int, enum.Enum):
   
   def __int__(self) -> int:
     return self.value
-
   
 class TagType(str, enum.Enum):
   codeValue = "Value",
   text = "Text",
   className = "class"
+
+class ItemGradeQuality(int, enum.Enum):
+  over50 = 50
+  over60 = 60
+  over70 = 70
+  over80 = 80
+  over90 = 90
+
 
 classEngrave= [ {
           "Value": 125,

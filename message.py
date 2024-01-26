@@ -594,27 +594,36 @@ class Noti2ndEtcOptView(discord.ui.View):
                        min_values=1, max_values=1,
                        options=[
                           discord.SelectOption(
-                              label="제한 없음",
-                          ),
-                          discord.SelectOption(
                               label="50 이상",
+                              value=jsonobject.ItemGradeQuality.over50
                           ),
                           discord.SelectOption(
                               label="60 이상",
+                              value=jsonobject.ItemGradeQuality.over60
                           ),
                           discord.SelectOption(
                               label="70 이상",
+                              value=jsonobject.ItemGradeQuality.over70
                           ),
                           discord.SelectOption(
                               label="80 이상",
+                              value=jsonobject.ItemGradeQuality.over80
                           ),
                           discord.SelectOption(
                               label="90 이상",
+                              value=jsonobject.ItemGradeQuality.over90
                           )
                        ])
   async def select_quality(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_quality.options:
+      option.default = False
+    
+    if len(select.values) != 0:
+      jsonobject.SearchOptionContainer().quality = select.values[0]
+      for option in self.select_quality.options:
+        if option.value == select.values[0]:
+          option.default = True
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="아이템 등급 (복수 선택 가능)",
                        min_values=1, max_values=2,
