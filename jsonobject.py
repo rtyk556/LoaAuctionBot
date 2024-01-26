@@ -30,6 +30,7 @@ class SearchOptionContainer():
      self.mainStat = None
      self.subStat = None
      self.quality = ItemGradeQuality.over50
+     self.grade = []
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
@@ -55,6 +56,17 @@ class ItemGradeQuality(int, enum.Enum):
   over80 = 80
   over90 = 90
 
+
+itemGrades: [
+    "일반",
+    "고급",
+    "희귀",
+    "영웅",
+    "전설",
+    "유물",
+    "고대",
+    "에스더"
+  ]
 
 classEngrave= [ {
           "Value": 125,

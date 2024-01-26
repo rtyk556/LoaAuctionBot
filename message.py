@@ -630,14 +630,23 @@ class Noti2ndEtcOptView(discord.ui.View):
                        options=[
                           discord.SelectOption(
                               label="유물",
+                              default = False
                           ),
                           discord.SelectOption(
                               label="고대",
+                              default = False
                           )
                        ])
   async def select_item_grade(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for i in range(len(self.select_item_grade.options)):
+      self.select_item_grade.options[i].default = False
+    
+    if len(select.values) != 0:
+      jsonobject.SearchOptionContainer().grade = select.values
+      for i in range(len(self.select_item_grade.options)):
+        if self.select_item_grade.options[i].label in select.values:
+          self.select_item_grade.options[i].default = True
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="정렬 기준",
                        min_values=1, max_values=1,
