@@ -295,16 +295,16 @@ class NotiMainOptView(discord.ui.View):
     if engrave == '미입력':
       return engrave
 
-    classEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.classEngrave]
+    classEngraveStr = [ x.get(jsonobject.TagType.text).replace(" ", "") for x in jsonobject.classEngrave]
     input_engrave = engrave.replace(" ", "")
-    publicEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.publicEngrave]
+    publicEngraveStr = [ x.get(jsonobject.TagType.text).replace(" ", "") for x in jsonobject.publicEngrave]
     
     if input_engrave in classEngraveStr:
-      jsonobject.SearchOptionContaitner.mainEngrave = jsonobject.classEngrave[classEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.codeValue)
-      return jsonobject.classEngrave[classEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.text)
+      jsonobject.SearchOptionContaitner.mainEngrave = jsonobject.classEngrave[classEngraveStr.index(input_engrave)].get(jsonobject.TagType.codeValue)
+      return jsonobject.classEngrave[classEngraveStr.index(input_engrave)].get(jsonobject.TagType.text)
     elif input_engrave in publicEngraveStr:
-      jsonobject.SearchOptionContaitner.mainEngrave = jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.codeValue)
-      return jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)].get(jsonobject.EngraveTagType.text)
+      jsonobject.SearchOptionContaitner.mainEngrave = jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)].get(jsonobject.TagType.codeValue)
+      return jsonobject.publicEngrave[publicEngraveStr.index(input_engrave)].get(jsonobject.TagType.text)
     wrong_message = "각인을 찾을 수 없습니다. 정확한 이름을 입력해주세요."
     return wrong_message
 
@@ -398,28 +398,25 @@ class NotiEtcOptView(discord.ui.View):
     rst_code = []
     rst_text = []
     
-    classEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.classEngrave]
+    classEngraveStr = [ x.get(jsonobject.TagType.text).replace(" ", "") for x in jsonobject.classEngrave]
     input_engraves = [engrave.replace(" ", "") for engrave in engraves]
-    publicEngraveStr = [ x.get(jsonobject.EngraveTagType.text).replace(" ", "") for x in jsonobject.publicEngrave]
+    publicEngraveStr = [ x.get(jsonobject.TagType.text).replace(" ", "") for x in jsonobject.publicEngrave]
     
     for input in input_engraves:
       if input in classEngraveStr:
-        rst_code.append(jsonobject.classEngrave[classEngraveStr.index(input)].get(jsonobject.EngraveTagType.codeValue))
-        rst_text.append(jsonobject.classEngrave[classEngraveStr.index(input)].get(jsonobject.EngraveTagType.text))
+        rst_code.append(jsonobject.classEngrave[classEngraveStr.index(input)].get(jsonobject.TagType.codeValue))
+        rst_text.append(jsonobject.classEngrave[classEngraveStr.index(input)].get(jsonobject.TagType.text))
       elif input in publicEngraveStr:
-        rst_code.append(jsonobject.publicEngrave[publicEngraveStr.index(input)].get(jsonobject.EngraveTagType.codeValue))
-        rst_text.append(jsonobject.publicEngrave[publicEngraveStr.index(input)].get(jsonobject.EngraveTagType.text))
+        rst_code.append(jsonobject.publicEngrave[publicEngraveStr.index(input)].get(jsonobject.TagType.codeValue))
+        rst_text.append(jsonobject.publicEngrave[publicEngraveStr.index(input)].get(jsonobject.TagType.text))
     jsonobject.SearchOptionContaitner.subEngraves = rst_code
     if len(rst_text) == 0:
       return "입력된 각인이 없습니다."
     return rst_text
   
   @discord.ui.select(placeholder="각인 최소값",
-                       min_values=1, max_values=1,
+                       min_values=0, max_values=1,
                        options=[
-                          discord.SelectOption(
-                              label="제한 없음",
-                          ),
                           discord.SelectOption(
                               label="3",
                           ),
@@ -434,15 +431,21 @@ class NotiEtcOptView(discord.ui.View):
                           ),
                        ])
   async def select_minEngrave(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_minEngrave.options:
+      option.default = False
+    
+    if len(select.values) != 0:
+      jsonobject.SearchOptionContaitner.subEngraveMin = int(select.values[0])
+      for option in self.select_minEngrave.options:
+        if option.label == select.values[0]:
+          option.default = True
+    else:
+      jsonobject.SearchOptionContaitner.subEngraveMin = 3
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="각인 최대값",
-                       min_values=1, max_values=1,
+                       min_values=0, max_values=1,
                        options=[
-                          discord.SelectOption(
-                              label="제한 없음",
-                          ),
                           discord.SelectOption(
                               label="3",
                           ),
@@ -457,8 +460,17 @@ class NotiEtcOptView(discord.ui.View):
                           ),
                        ])
   async def select_maxEngrave(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_maxEngrave.options:
+      option.default = False
+      
+    if len(select.values) != 0:
+      jsonobject.SearchOptionContaitner.subEngraveMax = int(select.values[0])
+      for option in self.select_maxEngrave.options:
+        if option.label == select.values[0]:
+          option.default = True
+    else:
+      jsonobject.SearchOptionContaitner.subEngraveMax = 6
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="스탯",
                        min_values=1, max_values=1,

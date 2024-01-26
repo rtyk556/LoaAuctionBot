@@ -13,6 +13,9 @@ class SearchOptionContaitner():
      self.mainEngraveMin = 3
      self.mainEngraveMax = 6
      self.subEngraves = []
+     self.subEngraveMin = 3
+     self.subEngraveMax = 6
+     self.mainStat = None
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
@@ -27,11 +30,10 @@ class AccesoryType(int, enum.Enum):
     return self.value
 
   
-class EngraveTagType(str, enum.Enum):
+class TagType(str, enum.Enum):
   codeValue = "Value",
   text = "Text",
   className = "class"
-
 
 classEngrave= [ {
           "Value": 125,
