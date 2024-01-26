@@ -29,6 +29,9 @@ class SearchOptionContainer():
      self.subEngraveMax = 6
      self.mainStat = None
      self.subStat = None
+     self.quality = ItemGradeQuality.over50
+     self.grade = []
+     self.sort_option = SortOptionType.buyPrice
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
@@ -41,12 +44,34 @@ class AccesoryType(int, enum.Enum):
   
   def __int__(self) -> int:
     return self.value
-
   
 class TagType(str, enum.Enum):
   codeValue = "Value",
   text = "Text",
   className = "class"
+
+class ItemGradeQuality(int, enum.Enum):
+  over50 = 50
+  over60 = 60
+  over70 = 70
+  over80 = 80
+  over90 = 90
+
+class SortOptionType(str, enum.Enum):
+  bidPrice = 'BIDSTART_PRICE'
+  buyPrice = 'BUY_PRICE'
+  
+
+itemGrades: [
+    "일반",
+    "고급",
+    "희귀",
+    "영웅",
+    "전설",
+    "유물",
+    "고대",
+    "에스더"
+  ]
 
 classEngrave= [ {
           "Value": 125,
