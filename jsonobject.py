@@ -1,10 +1,22 @@
 import enum
 import asyncio
 
-class SearchOptionContaitner():
+def singleton(class_):
+  instances = {}
+  
+  def get_instance(*args, **kwargs):
+    if class_ not in instances:
+      instances[class_] = class_(*args, **kwargs)
+    return instances[class_]
+  return get_instance
+
+@singleton
+class SearchOptionContainer():
+  __instance = None
+
   def __new__(cls, *args, **kwargs):
     if not hasattr(cls, "__instance"):
-      cls.__instance = super().__new__(cls)
+      cls.__instance = super().__new__(cls, *args, **kwargs)
     return cls.__instance
   
   def __init__(self):
@@ -12,6 +24,11 @@ class SearchOptionContaitner():
      self.mainEngrave = None
      self.mainEngraveMin = 3
      self.mainEngraveMax = 6
+     self.subEngraves = []
+     self.subEngraveMin = 3
+     self.subEngraveMax = 6
+     self.mainStat = None
+     self.subStat = None
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
@@ -26,11 +43,10 @@ class AccesoryType(int, enum.Enum):
     return self.value
 
   
-class EngraveTagType(str, enum.Enum):
+class TagType(str, enum.Enum):
   codeValue = "Value",
   text = "Text",
   className = "class"
-
 
 classEngrave= [ {
           "Value": 125,
