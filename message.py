@@ -495,8 +495,19 @@ class NotiEtcOptView(discord.ui.View):
                           )
                        ])
   async def select_mainStat(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_mainStat.options:
+      option.default = False
+    
+    if len(select.values) != 0:
+      rst = [ stat.get(jsonobject.TagType.codeValue) for stat in jsonobject.stat if select.values[0] == stat.get(jsonobject.TagType.text)]
+      if len(rst) != 0:
+        for option in self.select_mainStat.options:
+          if option.label == select.values[0]:
+            option.default = True
+        jsonobject.SearchOptionContaitner.mainStat = rst[0]
+      else:
+        raise IndexError("Main Stat result is not found in EtcOptView")
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="목걸이용 서브 스탯",
                        min_values=1, max_values=1,
