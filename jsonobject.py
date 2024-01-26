@@ -31,6 +31,7 @@ class SearchOptionContainer():
      self.subStat = None
      self.quality = ItemGradeQuality.over50
      self.grade = []
+     self.sort_option = SortOptionType.buyPrice
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
@@ -56,6 +57,10 @@ class ItemGradeQuality(int, enum.Enum):
   over80 = 80
   over90 = 90
 
+class SortOptionType(str, enum.Enum):
+  bidPrice = 'BIDSTART_PRICE'
+  buyPrice = 'BUY_PRICE'
+  
 
 itemGrades: [
     "일반",

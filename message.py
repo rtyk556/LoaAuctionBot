@@ -653,14 +653,25 @@ class Noti2ndEtcOptView(discord.ui.View):
                        options=[
                           discord.SelectOption(
                               label="입찰가 기준",
+                              value = jsonobject.SortOptionType.bidPrice
                           ),
                           discord.SelectOption(
                               label="구입가 기준",
+                              value = jsonobject.SortOptionType.buyPrice,
+                              default=True
                           )
                        ])
   async def select_sort_option(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_sort_option.options:
+      option.default = False
+    
+    if len(select.values) != 0:
+      jsonobject.SearchOptionContainer().sort_option = select.values[0]
+      if select.values[0] == jsonobject.SortOptionType.bidPrice:
+        self.select_sort_option.options[0].default = True
+      elif select.values[0] == jsonobject.SortOptionType.buyPrice:
+        self.select_sort_option.options[1].default = True
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
