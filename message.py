@@ -388,12 +388,8 @@ class NotiEtcOptView(discord.ui.View):
   def __init__(self, subEngrave:list = []):
     super().__init__()
     self.embed = discord.Embed.from_dict(get_etc_opt_message(self.search_engraves(subEngrave)))
-    print('acce type list : ', jsonobject.SearchOptionContainer().acceType)
-    print('isNeck : ', jsonobject.SearchOptionContainer().isNecklace())
-    print('test is neck : ', jsonobject.AccesoryType.necklace in [200010, 200020])
-    print("container mainEngrave : ", jsonobject.SearchOptionContainer().mainEngrave)
-    print("container max main : ", jsonobject.SearchOptionContainer().mainEngraveMax)
-
+    self.select_subStat.disabled = not(jsonobject.SearchOptionContainer().isNecklace())
+    
   def search_engraves(self, engraves:list):
     # 각인 값들을 입력받고 스페이스 제거 후에 jsonobject에 있는지 확인
     # 발견된 각인들을 리스트에 넣기. 없으면 리스트 비우기
@@ -516,7 +512,6 @@ class NotiEtcOptView(discord.ui.View):
   
   @discord.ui.select(placeholder="목걸이용 서브 스탯",
                        min_values=1, max_values=1,
-                       disabled=(not jsonobject.SearchOptionContainer().isNecklace()),
                        options=[
                           discord.SelectOption(
                               label="치명",
@@ -538,8 +533,19 @@ class NotiEtcOptView(discord.ui.View):
                           )
                        ])
   async def select_subStat(self, interaction, select):
-      # dataManager 받아와서 걔한테 데이터를 옮겨줘야 할 것 같다.
-      pass
+    for option in self.select_subStat.options:
+      option.default = False
+    
+    if len(select.values) != 0:
+      rst = [ stat.get(jsonobject.TagType.codeValue) for stat in jsonobject.stat if select.values[0] == stat.get(jsonobject.TagType.text)]
+      if len(rst) != 0:
+        for option in self.select_subStat.options:
+          if option.label == select.values[0]:
+            option.default = True
+        jsonobject.SearchOptionContainer().subStat = rst[0]
+      else:
+        raise IndexError("Sub Stat result is not found in EtcOptView")
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
   async def button_sub_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):

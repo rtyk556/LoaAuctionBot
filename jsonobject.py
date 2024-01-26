@@ -28,6 +28,7 @@ class SearchOptionContainer():
      self.subEngraveMin = 3
      self.subEngraveMax = 6
      self.mainStat = None
+     self.subStat = None
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
