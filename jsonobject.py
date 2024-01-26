@@ -1,10 +1,22 @@
 import enum
 import asyncio
 
-class SearchOptionContaitner():
+def singleton(class_):
+  instances = {}
+  
+  def get_instance(*args, **kwargs):
+    if class_ not in instances:
+      instances[class_] = class_(*args, **kwargs)
+    return instances[class_]
+  return get_instance
+
+@singleton
+class SearchOptionContainer():
+  __instance = None
+
   def __new__(cls, *args, **kwargs):
     if not hasattr(cls, "__instance"):
-      cls.__instance = super().__new__(cls)
+      cls.__instance = super().__new__(cls, *args, **kwargs)
     return cls.__instance
   
   def __init__(self):
