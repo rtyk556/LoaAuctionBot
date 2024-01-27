@@ -222,7 +222,7 @@ class NotiAcceTypeView(discord.ui.View):
     #   return cls.__instance
     
     @discord.ui.select(placeholder="장신구 종류",
-                       min_values=1, max_values=3,
+                       min_values=1, max_values=1,
                        options=[
                           discord.SelectOption(
                               label="목걸이",
@@ -251,14 +251,15 @@ class NotiAcceTypeView(discord.ui.View):
           option.default = False
       if len(select.values) != 0:
         self.button_next.disabled = False
-        container.acceType = [int(x) for x in select.values]
-        for value in select.values:
-          if int(value) == AccessoryType.necklace:
-            self.select_acce_type.options[0].default = True
-          elif int(value) == AccessoryType.earring:
-            self.select_acce_type.options[1].default = True
-          elif int(value) == AccessoryType.ring:
-            self.select_acce_type.options[2].default = True
+        value = select.values[0]
+        container.acceType = int(value)
+
+        if int(value) == AccessoryType.necklace:
+          self.select_acce_type.options[0].default = True
+        elif int(value) == AccessoryType.earring:
+          self.select_acce_type.options[1].default = True
+        elif int(value) == AccessoryType.ring:
+          self.select_acce_type.options[2].default = True
       await interaction.response.edit_message(embed=self.embed, view=self)
       # await interaction.response.defer()
     

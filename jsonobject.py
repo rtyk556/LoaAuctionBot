@@ -20,7 +20,7 @@ class SearchOptionContainer():
     return cls.__instance
   
   def __init__(self):
-     self.acceType = []
+     self.acceType = None
      self.mainEngrave = None
      self.mainEngraveMin = 3
      self.mainEngraveMax = 6
@@ -35,7 +35,7 @@ class SearchOptionContainer():
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
-    return AccessoryType.necklace in self.acceType
+    return AccessoryType.necklace == self.acceType
 
 class AccessoryType(int, enum.Enum):
   necklace = 200010,
