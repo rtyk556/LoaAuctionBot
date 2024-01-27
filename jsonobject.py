@@ -35,9 +35,9 @@ class SearchOptionContainer():
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
-    return AccesoryType.necklace in self.acceType
+    return AccessoryType.necklace in self.acceType
 
-class AccesoryType(int, enum.Enum):
+class AccessoryType(int, enum.Enum):
   necklace = 200010,
   earring = 200020,
   ring = 200030
@@ -60,7 +60,29 @@ class ItemGradeQuality(int, enum.Enum):
 class SortOptionType(str, enum.Enum):
   bidPrice = 'BIDSTART_PRICE'
   buyPrice = 'BUY_PRICE'
-  
+
+class AccessoryTagType(str, enum.Enum):
+  code = "Code",
+  codeName = "CodeName"
+
+accessory = [
+        {
+          "Code": 200010,
+          "CodeName": "목걸이"
+        },
+        {
+          "Code": 200020,
+          "CodeName": "귀걸이"
+        },
+        {
+          "Code": 200030,
+          "CodeName": "반지"
+        },
+        {
+          "Code": 200040,
+          "CodeName": "팔찌"
+        }
+      ]
 
 itemGrades: [
     "일반",
