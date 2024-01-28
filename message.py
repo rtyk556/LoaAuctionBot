@@ -1,6 +1,7 @@
 from typing import Optional
 import discord
 from jsonobject import *
+from searchengine import SearchEngine
 
 first_message = {
   "embeds": 
@@ -698,7 +699,7 @@ class OptionResultView(discord.ui.View):
   def __init__(self):
     super().__init__()
     self.embed = discord.Embed(title="검색 옵션", description="다음과 같은 옵션으로 검색합니다.", color=discord.Color.random()) 
-    self.embed.add_field(name="악세서리 종류", value=[x.get(AccessoryTagType.codeName) for x in accessory if x.get(AccessoryTagType.code) in SearchOptionContainer().acceType], inline=False)
+    self.embed.add_field(name="악세서리 종류", value=[x.get(AccessoryTagType.codeName) for x in accessory if x.get(AccessoryTagType.code) == SearchOptionContainer().acceType], inline=False)
     embMainEng=""
     for engrave in classEngrave+publicEngrave:
       if SearchOptionContainer().mainEngrave == engrave.get(TagType.codeValue):
@@ -724,8 +725,11 @@ class OptionResultView(discord.ui.View):
   
   @discord.ui.button(label='검색', style=discord.ButtonStyle.green)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = FirstView()
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    engine = SearchEngine()
+    contents = f"검색 결과 : {[x.get('AuctionInfo').get('BuyPrice') for x in engine.get_search_result()]}"
+    await interaction.response.send_message(content=contents)
+    # view = FirstView()
+    # await interaction.response.edit_message(embed=view.embed, view=view)
     # view = FirstView.getInstance()
     # await interaction.response.edit_message(embed=view.embed, view = view)
     
