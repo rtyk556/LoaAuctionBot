@@ -65,6 +65,27 @@ class AccessoryTagType(str, enum.Enum):
   code = "Code",
   codeName = "CodeName"
 
+class ResponseJsonTagType(str, enum.Enum):
+  pageNum = 'PageNo'
+  pageSize = 'PageSize'
+  totalCount = 'TotalCount'
+  items = 'Items'
+
+class AuctionItemTagType(str, enum.Enum):
+  name = 'Name',
+  grade = 'Grade'
+  quality = 'GradeQuality'
+  auctionInfo = 'AuctionInfo' # price, enddate, tradeallowcount ... 
+  options = 'Options' # stat, engraves, penalty ...
+
+class ItemOptionTagType(str, enum.Enum):
+  type = 'Type' # stat, ability_engrave, ..
+  optionName = 'OptionName'
+  value = 'Value'
+  isPenalty = 'IsPenalty'
+  stat = 'STAT'
+  engrave = 'ABILITY_ENGRAVE'
+
 accessory = [
         {
           "Code": 200010,
