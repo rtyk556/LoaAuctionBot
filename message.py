@@ -725,18 +725,59 @@ class OptionResultView(discord.ui.View):
   
   @discord.ui.button(label='검색', style=discord.ButtonStyle.green)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
-    engine = SearchEngine()
-    contents = f"검색 결과 : {[x.get('AuctionInfo').get('BuyPrice') for x in engine.get_search_result()]}"
-    await interaction.response.send_message(content=contents)
-    # view = FirstView()
-    # await interaction.response.edit_message(embed=view.embed, view=view)
-    # view = FirstView.getInstance()
-    # await interaction.response.edit_message(embed=view.embed, view = view)
-    
+    view = SearchResultView()
+    await interaction.response.send_message(embed=view.embed, view=view)
+
+  # @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.green)
+  # async def button_noti(self, interaction: discord.Interaction, button: discord.ui.Button):
+  #   engine = SearchEngine()
+  #   while True:
+  #     import asyncio
+  #     result = engine.get_search_result()
+  #     contents = [x.get('AuctionInfo').get('BuyPrice') for x in result]
+  #     # await interaction.followup.send(content=f'result: {contents}', ephemeral=True)
+  #     # await interaction.response.send_message(content=f'result: {contents}', ephemeral=True)
+  #     await asyncio.sleep(60)
+  #   contents = f"검색 결과 : {[x.get('AuctionInfo').get('BuyPrice') for x in engine.get_search_result()]}"
+  #   await interaction.response.send_message(content=contents)
+
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = FirstView()
     await interaction.response.edit_message(embed=view.embed, view=view)
+
+class SearchResultView(discord.ui.View):
+  def __init__(self):
+    super().__init__()
+    self.embed = discord.Embed(title="검색 결과", description="\n\n", color=discord.Color.random())
+    self.add_result_field()
+  
+  def add_result_field(self):
+    engine = SearchEngine()
+    results = engine.get_search_results()
+    for result in results:
+      stats = []
+      engraves = []
+      for option in result.get(AuctionItemTagType.options):
+        if option.get(ItemOptionTagType.type) == ItemOptionTagType.stat:
+          stats.append(option)
+        elif option.get(ItemOptionTagType.type) == ItemOptionTagType.engrave:
+          engraves.append(option)
+      
+      if len(stats) < 1 or len(engraves) < 3:
+        raise Exception("Cannot find stats or engraves in search results.")
+      
+      text =  f'입찰가 : {result.get(AuctionItemTagType.auctionInfo).get(AuctionInfoTagType.startPrice)} \t 구매가 : {result.get(AuctionItemTagType.auctionInfo).get(AuctionInfoTagType.buyPrice)} \n'
+      text += f'품질 : {result.get(AuctionItemTagType.quality)}     {stats[0].get(ItemOptionTagType.optionName)} : {stats[0].get(ItemOptionTagType.values)}     '
+      if len(stats) == 2:
+        text += f'{stats[1].get(ItemOptionTagType.optionName)} : {stats[0].get(ItemOptionTagType.values)}'
+      engraves.reverse() # 페널티가 맨 앞에 있어서 맨 마지막으로 변경. 이러면 3, 6, 페널티 각인 순서
+      for engrave in engraves:
+          text += f'\n{engrave.get(ItemOptionTagType.optionName)} : {engrave.get(ItemOptionTagType.values)}'
+
+      self.embed.add_field(name=result.get(AuctionItemTagType.name), value = text, inline=False)
+
+  
 
 # class SearchAuctionButton(discord.ui.view):
 #   def __init__(self):
