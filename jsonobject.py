@@ -78,10 +78,18 @@ class AuctionItemTagType(str, enum.Enum):
   auctionInfo = 'AuctionInfo' # price, enddate, tradeallowcount ... 
   options = 'Options' # stat, engraves, penalty ...
 
+class AuctionInfoTagType(str, enum.Enum):
+  startPrice = 'StartPrice',
+  buyPrice = 'BuyPrice',
+  BidPrice = 'BidPrice'
+  endDate = 'EndDate',
+  bidStartPrice = 'BidStartPrice',
+  tradeAllowCount = 'TradeAllowCount'
+
 class ItemOptionTagType(str, enum.Enum):
   type = 'Type' # stat, ability_engrave, ..
   optionName = 'OptionName'
-  value = 'Value'
+  values = 'Value'
   isPenalty = 'IsPenalty'
   stat = 'STAT'
   engrave = 'ABILITY_ENGRAVE'
