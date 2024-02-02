@@ -83,7 +83,7 @@ class SearchEngine():
                 "MaxValue" : None
             })
         
-        if len(container.subEngraves) == 0:
+        if len(container.subEngraves) == 1:
             basic_search_option['EtcOptions'].append(
                 {
                     "FirstOption" : 3,
@@ -152,12 +152,13 @@ class SearchEngine():
         return self.curItemIndex == 0 and self.curPageIndex == 0
     
     def isLastResult(self):
-        return self.curPageIndex == self.totalPageIndex and self.curItemIndex == (self.totalPageIndex%10 - 1)
+        return self.curItemIndex == None or self.curItemIndex == None
     
     def get_next_index(self):
+        print('cur index : ', (self.curPageIndex, self.curItemIndex))
         if self.curPageIndex == 0 and self.curItemIndex == 0:
             return (0,0)
-        elif ((self.curPageIndex+1)*self.loaPageSize + self.curItemIndex+1) == self.totalItemNum: # 마지막 아이템
+        elif ((self.curPageIndex)*self.loaPageSize + self.curItemIndex+1) == self.totalItemNum: # 마지막 아이템
             return (None, None)
         elif self.curItemIndex == (self.loaPageSize - 1): # 한 페이지 마지막 아이템
             return (self.curPageIndex+1, 0)
