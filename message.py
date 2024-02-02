@@ -736,10 +736,14 @@ class SearchResultView(discord.ui.View):
     self.embed = discord.Embed(title="검색 결과", description="\n\n", color=discord.Color.random())
     self.engine = SearchEngine()
     self.embed_list = pyllist.dllist()
-    self.add_result_field()
+    if self.engine.totalItemNum == 0:
+      self.embed.add_field(name="검색 결과가 없습니다.", value=" ")
+      self.button_next_rst.disabled = True
+      self.button_prev_rst.disabled = True
+    else:
+      self.add_result_field()
         
   def add_result_field(self):
-    print('embed list test : ', self.embed_list)
     if len(self.embed_list) != 0 and not self.embed in self.embed_list:
       raise IndexError('Cannot find embed message in SearchResultView')
     if len(self.embed_list) != 0 and self.embed != self.embed_list[-1]:
@@ -750,15 +754,8 @@ class SearchResultView(discord.ui.View):
     results = self.engine.get_search_results()
     self.embed = discord.Embed(title="검색 결과", description="\n\n", color=discord.Color.random())
     
-    if self.engine.totalItemNum == 0:
-      self.embed.add_field(name="검색 결과가 없습니다.", value=" ")
-      self.button_next_rst.disabled = True
-      self.button_prev_rst.disabled = True
-      return
-    
     if len(results) == 0:
       self.embed.add_field(name="검색 결과가 없습니다.", value=" ")
-      self.button_next_rst.disabled = True
       return
 
     for result in results:
@@ -829,33 +826,6 @@ class SearchResultView(discord.ui.View):
     if self.engine.isLastResult():
       self.button_next_rst.disabled = True
     await interaction.response.edit_message(embed=self.embed, view=self)
-    
-    # view가 가지고 있는 engine으로 부터 어디까지 검색했는지 index 정보와 전체 아이템 숫자 확인 가능
-    # view에서 add_result_field 실행하면 자동으로 다음거 검색해서 해줄 것.
-    # 이전 정보로 다음 정보 가져오기. 
-    # 다음이 검색 가능한지 확인해야한다. 근데 다음은 일단 검색을 해봐야 되는지 안되는지 알듯? 이전에선 알 수가 잇나?
-    # 가지고 있는 정보가 전체 페이지 수랑 전체 아이템 수, 내 위치. 아 그러면 마지막 위치 유추 가능.
-    # 만약 내 현재 페이지가 마지막 페이지이고, 아이템 인덱스는 totalItemNum에서 몫 - 1 이 마지막 인덱스일 것
-    # 만약 지금 인덱스가 00이 아니면 처음이 아니니까 prev 활성화
-    # 이전 정보가 마지막이라면 다음 비활성화 해야함.
-    # 검색 결과를 고정 시키는 방법 1. 모든 가능한 결과를 미리 response로 저장한다. 예를 들어 매물이 1000개 있으면 100회 가능
-    # 2. view 내에서 embed 리스트를 만들고 마지막 인덱스면 add_result_field 후에 embed list에 추가 -> 이전 정보가 있으면 이동
-
-# class SearchAuctionButton(discord.ui.view):
-#   def __init__(self):
-#     super.__init__()
-  
-#   @discord.ui.Button(label='매물 검색', style=discord.ButtonStyle.primary)
-#   async def button_search(self, button: discord.ui.Button, interaction: discord.Interaction):
-#     pass
-
-# class SearchAuctionButton(discord.ui.view):
-#   def __init__(self):
-#     super.__init__()
-  
-#   @discord.ui.Button(label='알림 설정', style=discord.ButtonStyle.primary)
-#   async def button_noti(self, button: discord.ui.Button, interaction: discord.Interaction):
-#     pass
 
   
     
