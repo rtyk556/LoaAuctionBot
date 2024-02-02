@@ -735,6 +735,7 @@ class SearchResultView(discord.ui.View):
     self.embed = discord.Embed(title="검색 결과", description="\n\n", color=discord.Color.random())
     self.engine = SearchEngine()
     self.embed_list = []
+    self.isNoResult = False
     self.add_result_field()
         
   def add_result_field(self):
@@ -756,9 +757,10 @@ class SearchResultView(discord.ui.View):
     
     if len(results) == 0:
       self.embed.add_field(name="검색 결과가 없습니다.", value=" ")
-      self.embed_list.append(self.embed)
+      self.isNoResult = True
+      self.button_next_rst.disabled = True
       return
-    
+
     for result in results:
       print('results is : ', result)
       stats = []
@@ -803,10 +805,15 @@ class SearchResultView(discord.ui.View):
   async def button_prev_rst(self, interaction: discord.Interaction, button: discord.ui.Button):
     if self.embed == self.embed_list[0]:
       raise IndexError("Cannot go previous result in SearchResultView")
-    self.embed = self.embed_list[self.embed_list.index(self.embed) - 1]
     self.button_next_rst.disabled = False
     self.button_prev_rst.disabled = False
-
+    
+    if self.isNoResult:
+      self.embed = self.embed_list[-1]
+      self.button_next_rst.disabled = True
+    else:
+      self.embed = self.embed_list[self.embed_list.index(self.embed) - 1]
+    
     if self.embed == self.embed_list[0]:
       self.button_prev_rst.disabled=True
     if self.engine.isLastResult():

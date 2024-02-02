@@ -40,6 +40,8 @@ class SearchEngine():
         self.totalPageIndex = 0
         self.curPageIndex = 0
         self.curItemIndex = 0
+        self.loaPageSize = 10
+        self.botPageSize = 5
     
     def make_search_option(self, pageNum=1):
         container = SearchOptionContainer()
@@ -104,14 +106,12 @@ class SearchEngine():
     
     def get_search_results(self):
         url = 'https://developer-lostark.game.onstove.com/auctions/items'
-        loaPageSize = 10
-        botPageSize = 5
         
         if self.totalItemNum == -1:
             response = requests.post(url, headers=headers, json=self.make_search_option())
             try:
                 self.totalItemNum = response.json().get(ResponseJsonTagType.totalCount)
-                self.totalPageIndex = math.ceil(self.totalItemNum/loaPageSize)
+                self.totalPageIndex = math.ceil(self.totalItemNum/self.loaPageSize)
             except Exception as e:
                 print('Error has occured in get_search_results : ', e)
         rst = []
@@ -119,11 +119,13 @@ class SearchEngine():
         if self.totalItemNum != 0:
             curPageIndex = 0
             curItemIndex = 0
+            self.curPageIndex, self.curItemIndex = self.get_next_index()
+            if self.curPageIndex == None or self.curItemIndex == None:
+                return []
             for curPageIndex in range(self.curPageIndex, self.totalPageIndex):    
                 response = requests.post(url, headers=headers, json=self.make_search_option(pageNum=curPageIndex+1))
                 if response.status_code == 200:
                     json = response.json()
-                    items = json.get('Items')
                     items = json.get(ResponseJsonTagType.items)
                     
                     for curItemIndex in range(self.curItemIndex, len(items)):
@@ -134,7 +136,8 @@ class SearchEngine():
                             for option in item_options:
                                 if option.get(ItemOptionTagType.type) == ItemOptionTagType.engrave and option.get(ItemOptionTagType.optionName) in self.subEngraveList and not items[curItemIndex] in rst:
                                     rst.append(items[curItemIndex])
-                        if len(rst) >= botPageSize:
+                                    break
+                        if len(rst) >= self.botPageSize:
                             self.curPageIndex = curPageIndex
                             self.curItemIndex = curItemIndex
                             return rst
@@ -151,6 +154,14 @@ class SearchEngine():
     def isLastResult(self):
         return self.curPageIndex == self.totalPageIndex and self.curItemIndex == (self.totalPageIndex%10 - 1)
     
+    def get_next_index(self):
+        if self.curPageIndex == 0 and self.curItemIndex == 0:
+            return (0,0)
+        elif ((self.curPageIndex+1)*self.loaPageSize + self.curItemIndex+1) == self.totalItemNum: # 마지막 아이템
+            return (None, None)
+        elif self.curItemIndex == (self.loaPageSize - 1): # 한 페이지 마지막 아이템
+            return (self.curPageIndex+1, 0)
+        return (self.curPageIndex, self.curItemIndex+1)
     def get_search_result(self):
         # 일단 한 페이지만 보여주는 식으로 할까? 그러려면 현재 페이지를 이 클래스 인스턴스가 기억해야한다.
         # 현재는 로아 경매장 페이지 사이즈인 10 으로 전체 넘버를 나눠서 모든 매물을 확인하는 중이다.
