@@ -20,7 +20,7 @@ class SearchOptionContainer():
     return cls.__instance
   
   def __init__(self):
-     self.acceType = []
+     self.acceType = None
      self.mainEngrave = None
      self.mainEngraveMin = 3
      self.mainEngraveMax = 6
@@ -35,9 +35,9 @@ class SearchOptionContainer():
      self.lock = asyncio.Lock()
   
   def isNecklace(self):
-    return AccesoryType.necklace in self.acceType
+    return AccessoryType.necklace == self.acceType
 
-class AccesoryType(int, enum.Enum):
+class AccessoryType(int, enum.Enum):
   necklace = 200010,
   earring = 200020,
   ring = 200030
@@ -60,7 +60,58 @@ class ItemGradeQuality(int, enum.Enum):
 class SortOptionType(str, enum.Enum):
   bidPrice = 'BIDSTART_PRICE'
   buyPrice = 'BUY_PRICE'
-  
+
+class AccessoryTagType(str, enum.Enum):
+  code = "Code",
+  codeName = "CodeName"
+
+class ResponseJsonTagType(str, enum.Enum):
+  pageNum = 'PageNo'
+  pageSize = 'PageSize'
+  totalCount = 'TotalCount'
+  items = 'Items'
+
+class AuctionItemTagType(str, enum.Enum):
+  name = 'Name',
+  grade = 'Grade'
+  quality = 'GradeQuality'
+  auctionInfo = 'AuctionInfo' # price, enddate, tradeallowcount ... 
+  options = 'Options' # stat, engraves, penalty ...
+
+class AuctionInfoTagType(str, enum.Enum):
+  startPrice = 'StartPrice',
+  buyPrice = 'BuyPrice',
+  BidPrice = 'BidPrice'
+  endDate = 'EndDate',
+  bidStartPrice = 'BidStartPrice',
+  tradeAllowCount = 'TradeAllowCount'
+
+class ItemOptionTagType(str, enum.Enum):
+  type = 'Type' # stat, ability_engrave, ..
+  optionName = 'OptionName'
+  values = 'Value'
+  isPenalty = 'IsPenalty'
+  stat = 'STAT'
+  engrave = 'ABILITY_ENGRAVE'
+
+accessory = [
+        {
+          "Code": 200010,
+          "CodeName": "목걸이"
+        },
+        {
+          "Code": 200020,
+          "CodeName": "귀걸이"
+        },
+        {
+          "Code": 200030,
+          "CodeName": "반지"
+        },
+        {
+          "Code": 200040,
+          "CodeName": "팔찌"
+        }
+      ]
 
 itemGrades: [
     "일반",

@@ -123,6 +123,13 @@ async def test(ctx:commands.context):
     view = message.FirstView()
     await ctx.send(embed=view.embed, view=view)
 
+@bot.command()
+async def loopTest(ctx:commands.context):
+  import asyncio
+  while True:
+    await ctx.send('30초마다 메시지 보내기')
+    await asyncio.sleep(30)
+
 @bot.event
 async def on_message(message):
     # 명령어가 봇 자신의 메시지일 경우 무시
