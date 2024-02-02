@@ -36,7 +36,8 @@ url = 'https://developer-lostark.game.onstove.com/auctions/items'
 class SearchEngine():
     def __init__(self):
         self.subEngraveList = []
-        self.totalItemNum = 0
+        self.totalItemNum = -1
+        self.totalPageIndex = 0
         self.curPageIndex = 0
         self.curItemIndex = 0
     
@@ -106,16 +107,19 @@ class SearchEngine():
         loaPageSize = 10
         botPageSize = 5
         
-        if self.totalItemNum == 0:
+        if self.totalItemNum == -1:
             response = requests.post(url, headers=headers, json=self.make_search_option())
             try:
                 self.totalItemNum = response.json().get(ResponseJsonTagType.totalCount)
+                self.totalPageIndex = math.ceil(self.totalItemNum/loaPageSize)
             except Exception as e:
                 print('Error has occured in get_search_results : ', e)
         rst = []
         
         if self.totalItemNum != 0:
-            for curPageIndex in range(self.curPageIndex, math.ceil(self.totalItemNum/loaPageSize)):    
+            curPageIndex = 0
+            curItemIndex = 0
+            for curPageIndex in range(self.curPageIndex, self.totalPageIndex):    
                 response = requests.post(url, headers=headers, json=self.make_search_option(pageNum=curPageIndex+1))
                 if response.status_code == 200:
                     json = response.json()
@@ -130,15 +134,22 @@ class SearchEngine():
                             for option in item_options:
                                 if option.get(ItemOptionTagType.type) == ItemOptionTagType.engrave and option.get(ItemOptionTagType.optionName) in self.subEngraveList and not items[curItemIndex] in rst:
                                     rst.append(items[curItemIndex])
+                        if len(rst) >= botPageSize:
+                            self.curPageIndex = curPageIndex
+                            self.curItemIndex = curItemIndex
+                            return rst
                 elif response.status_code == 429: # too much requests
                     raise Exception("API Requests has exceeded limits.")
-                
-                if len(rst) >= botPageSize:
-                    self.curPageIndex = curPageIndex
-                    self.curItemIndex = curItemIndex
-                    break
         
+        self.curPageIndex = curPageIndex
+        self.curItemIndex = curItemIndex
         return rst
+    
+    def isFirstResult(self):
+        return self.curItemIndex == 0 and self.curPageIndex == 0
+    
+    def isLastResult(self):
+        return self.curPageIndex == self.totalPageIndex and self.curItemIndex == (self.totalPageIndex%10 - 1)
     
     def get_search_result(self):
         # 일단 한 페이지만 보여주는 식으로 할까? 그러려면 현재 페이지를 이 클래스 인스턴스가 기억해야한다.
