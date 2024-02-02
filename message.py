@@ -2,6 +2,7 @@ from typing import Optional
 import discord
 from jsonobject import *
 from searchengine import SearchEngine
+import pyllist
 
 first_message = {
   "embeds": 
@@ -734,8 +735,7 @@ class SearchResultView(discord.ui.View):
     super().__init__()
     self.embed = discord.Embed(title="검색 결과", description="\n\n", color=discord.Color.random())
     self.engine = SearchEngine()
-    self.embed_list = []
-    self.isNoResult = False
+    self.embed_list = pyllist.dllist()
     self.add_result_field()
         
   def add_result_field(self):
@@ -743,7 +743,8 @@ class SearchResultView(discord.ui.View):
     if len(self.embed_list) != 0 and not self.embed in self.embed_list:
       raise IndexError('Cannot find embed message in SearchResultView')
     if len(self.embed_list) != 0 and self.embed != self.embed_list[-1]:
-      self.embed = self.embed_list[self.embed_list.index(self.embed)+1]
+      embed_node = [n for n in self.embed_list.iternodes() if n.value == self.embed][0]
+      self.embed = embed_node.next.value
       return
 
     results = self.engine.get_search_results()
@@ -757,7 +758,6 @@ class SearchResultView(discord.ui.View):
     
     if len(results) == 0:
       self.embed.add_field(name="검색 결과가 없습니다.", value=" ")
-      self.isNoResult = True
       self.button_next_rst.disabled = True
       return
 
@@ -808,11 +808,12 @@ class SearchResultView(discord.ui.View):
     self.button_next_rst.disabled = False
     self.button_prev_rst.disabled = False
     
-    if self.isNoResult:
-      self.embed = self.embed_list[-1]
+    embed_nodes = [n for n in self.embed_list.iternodes() if n.value == self.embed]
+    if len(embed_nodes) == 0: # 검색 결과 없음이라 list에 없는 embed일 경우
+      self.embed = self.embed_list.last()
       self.button_next_rst.disabled = True
     else:
-      self.embed = self.embed_list[self.embed_list.index(self.embed) - 1]
+      self.embed = embed_nodes[0].prev.value
     
     if self.embed == self.embed_list[0]:
       self.button_prev_rst.disabled=True
