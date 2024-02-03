@@ -834,9 +834,13 @@ class NotificationModal(discord.ui.Modal, title="알림 조건 가격"):
   price_condition = discord.ui.TextInput(label="알림 설정 가격", required=True, placeholder="해당 가격 이하인 매물이 생길 경우 메시지를 보냅니다.")
   
   async def on_submit(self, interaction: discord.Interaction):
-    # data 추가
     import DBmanager
     dbmanager = DBmanager.DBManager()
-    dbmanager.add_new_user(interaction.user.id)
     
-    await interaction.response.send_message(content=f"알림 설정 완료!")
+    try:
+      price = int(self.price_condition.value)
+    except ValueError:
+      await interaction.response.send_message(content='숫자로만 입력해주세요', ephemeral=True)
+    
+    dbmanager.add_preset(interaction.user.id, [SearchEngine().make_search_option(), price])
+    await interaction.response.send_message(content=f"알림 설정 완료!",  ephemeral=True)

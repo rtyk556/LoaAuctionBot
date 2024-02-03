@@ -117,7 +117,7 @@ async def button_command(ctx):
     # 버튼에 콜백 함수 등록
     bot.add_view(MyButtonView(), message, button_callback)
 
-@bot.command()
+@bot.command(name='test')
 async def test(ctx:commands.context):
     print(ctx)
     view = message.FirstView()
