@@ -25,7 +25,6 @@ class SearchOptionContainer():
      self.quality = ItemGradeQuality.over50
      self.grade = []
      self.sort_option = SortOptionType.buyPrice
-     self.lock = asyncio.Lock()
   
   def isNecklace(self):
     return AccessoryType.necklace == self.acceType

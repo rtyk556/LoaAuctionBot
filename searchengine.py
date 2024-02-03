@@ -62,15 +62,8 @@ class SearchEngine():
                 "MinValue" : container.mainEngraveMin,
                 "MaxValue" : container.mainEngraveMax,
             }
-            # {
-            #     "FirstOption" : 3,
-            #     "SecondOption" : 141, # 141은 예둔
-            #     "MinValue" : 3,
-            #     "MaxValue" : None
-            # }
             ],
             'ItemTier': 3,
-            # 'ItemGrade': '고대',
             'PageNo' : pageNum,
             'SortCondition': 'ASC',
         }
