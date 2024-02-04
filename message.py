@@ -842,5 +842,9 @@ class NotificationModal(discord.ui.Modal, title="알림 조건 가격"):
     except ValueError:
       await interaction.response.send_message(content='숫자로만 입력해주세요', ephemeral=True)
     
-    dbmanager.add_preset(interaction.user.id, [SearchEngine().make_search_option(), price])
+    preset = DBmanager.PresetData()
+    engine = SearchEngine()
+    preset.edit_preset(DBmanager.PresetTag.search_option, [engine.make_search_option(), engine.subEngraveList])
+    preset.edit_preset(DBmanager.PresetTag.condition, price)
+    dbmanager.add_preset(interaction.user.id, preset)
     await interaction.response.send_message(content=f"알림 설정 완료!",  ephemeral=True)

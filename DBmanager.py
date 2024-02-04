@@ -17,32 +17,34 @@ class PresetTag(str, enum.Enum):
     search_history = 'search_history'
     
 class PresetData():
-    def __init__(self):
-        self.preset = {
-            PresetTag.search_option : None,
+    def __init__(self, input = {PresetTag.search_option : None,
             PresetTag.condition : None,
-            PresetTag.search_history : None
+            PresetTag.search_history : []}):
+        self.preset_data = {
+            PresetTag.search_option : input[PresetTag.search_option],
+            PresetTag.condition : input[PresetTag.condition],
+            PresetTag.search_history : input[PresetTag.search_history]
         }
     
     def get_search_option(self):
-        return self.preset[PresetTag.search_option]
+        return self.preset_data[PresetTag.search_option]
     
     def get_condition(self):
-        return self.preset[PresetTag.condition]
+        return self.preset_data[PresetTag.condition]
     
     def get_search_history(self):
-        return self.preset[PresetTag.search_history]
+        return self.preset_data[PresetTag.search_history]
     
     def edit_preset(self, tag:PresetTag, changed_value):
         if tag == PresetTag.search_option:
-            self.preset[PresetTag.search_option] = changed_value
+            self.preset_data[PresetTag.search_option] = changed_value
         elif tag == PresetTag.condition:
             try:
-                self.preset[PresetTag.condition] = int(changed_value)
+                self.preset_data[PresetTag.condition] = int(changed_value)
             except ValueError as e:
                 raise Exception('Condition must be int type.', e)
         elif tag == PresetTag.search_history:
-            self.preset[PresetTag.search_history] = changed_value
+            self.preset_data[PresetTag.search_history] = changed_value
 
 def singleton(class_):
   instances = {}
@@ -96,12 +98,14 @@ class DBManager():
                 if user.get(DBDataTag.user_id) == userid:
                     user_presets = user.get(DBDataTag.preset)
                     for i in range(len(user_presets)):
-                        if user_presets[i].get_search_option() == preset.get_search_option():
-                            user_presets[i].edit_preset(PresetTag.condition, preset.get_condition())
-                            user_presets[i].edit_preset(PresetTag.search_history, preset.get_search_history())
+                        exist_preset = PresetData(user_presets[i])
+                        if exist_preset.get_search_option() == preset.get_search_option():
+                            exist_preset.edit_preset(PresetTag.condition, preset.get_condition())
+                            exist_preset.edit_preset(PresetTag.search_history, preset.get_search_history())
+                            user_presets[i] = exist_preset.preset_data
                             break
-                    if preset not in user_presets:
-                        user_presets.append(preset)
+                    if not preset.preset_data in user_presets:
+                        user_presets.append(preset.preset_data)
                     user[DBDataTag.preset] = user_presets
                     data.get(DBDataTag.users)[idx] = user
                     break
