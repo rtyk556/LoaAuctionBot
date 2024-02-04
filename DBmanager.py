@@ -78,3 +78,36 @@ class DBDataTag(str, enum.Enum):
     guild = "guild"
     api = "api"
     preset = "preset"
+    
+class PresetTag(str, enum.Enum):
+    search_option = 'search_option'
+    condition = 'condition'
+    search_history = 'search_history'
+    
+class PresetData():
+    def __init__(self):
+        self.preset = {
+            PresetTag.search_option : None,
+            PresetTag.condition : None,
+            PresetTag.search_history : None
+        }
+    
+    def get_search_option(self):
+        return self.preset[PresetTag.search_option]
+    
+    def get_condition(self):
+        return self.preset[PresetTag.condition]
+    
+    def get_search_history(self):
+        return self.preset[PresetTag.search_history]
+    
+    def edit_preset(self, tag:PresetTag, changed_value):
+        if tag == PresetTag.search_option:
+            self.preset[PresetTag.search_option] = changed_value
+        elif tag == PresetTag.condition:
+            try:
+                self.preset[PresetTag.condition] = int(changed_value)
+            except ValueError as e:
+                raise Exception('Condition must be int type.', e)
+        elif tag == PresetTag.search_history:
+            self.preset[PresetTag.search_history] = changed_value
