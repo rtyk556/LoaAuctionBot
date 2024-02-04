@@ -723,7 +723,7 @@ class OptionResultView(discord.ui.View):
   @discord.ui.button(label='검색', style=discord.ButtonStyle.green)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = SearchResultView()
-    await interaction.response.send_message(embed=view.embed, view=view)
+    await interaction.response.edit_message(embed=view.embed, view=view)
 
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -787,16 +787,18 @@ class SearchResultView(discord.ui.View):
 
   @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.green)
   async def button_noti(self, interaction: discord.Interaction, button: discord.ui.Button):
-    engine = SearchEngine()
-    while True:
-      import asyncio
-      result = engine.get_search_result()
-      contents = [x.get('AuctionInfo').get('BuyPrice') for x in result]
-      # await interaction.followup.send(content=f'result: {contents}', ephemeral=True)
-      # await interaction.response.send_message(content=f'result: {contents}', ephemeral=True)
-      await asyncio.sleep(60)
-    contents = f"검색 결과 : {[x.get('AuctionInfo').get('BuyPrice') for x in engine.get_search_result()]}"
-    await interaction.response.send_message(content=contents)
+    modal = NotificationModal()
+    await interaction.response.send_modal(modal)
+    # engine = SearchEngine()
+    # while True:
+    #   import asyncio
+    #   result = engine.get_search_result()
+    #   contents = [x.get('AuctionInfo').get('BuyPrice') for x in result]
+    #   # await interaction.followup.send(content=f'result: {contents}', ephemeral=True)
+    #   # await interaction.response.send_message(content=f'result: {contents}', ephemeral=True)
+    #   await asyncio.sleep(60)
+    # contents = f"검색 결과 : {[x.get('AuctionInfo').get('BuyPrice') for x in engine.get_search_result()]}"
+    # await interaction.response.send_message(content=contents)
     
   @discord.ui.button(label='이전 검색 결과', style=discord.ButtonStyle.primary, disabled=True)
   async def button_prev_rst(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -828,4 +830,21 @@ class SearchResultView(discord.ui.View):
     await interaction.response.edit_message(embed=self.embed, view=self)
 
   
+class NotificationModal(discord.ui.Modal, title="알림 조건 가격"):
+  price_condition = discord.ui.TextInput(label="알림 설정 가격", required=True, placeholder="해당 가격 이하인 매물이 생길 경우 메시지를 보냅니다.")
+  
+  async def on_submit(self, interaction: discord.Interaction):
+    import DBmanager
+    dbmanager = DBmanager.DBManager()
     
+    try:
+      price = int(self.price_condition.value)
+    except ValueError:
+      await interaction.response.send_message(content='숫자로만 입력해주세요', ephemeral=True)
+    
+    preset = DBmanager.PresetData()
+    engine = SearchEngine()
+    preset.edit_preset(DBmanager.PresetTag.search_option, [engine.make_search_option(), engine.subEngraveList])
+    preset.edit_preset(DBmanager.PresetTag.condition, price)
+    dbmanager.add_preset(interaction.user.id, preset)
+    await interaction.response.send_message(content=f"알림 설정 완료!",  ephemeral=True)
