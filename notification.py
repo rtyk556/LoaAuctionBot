@@ -1,24 +1,31 @@
 from discord.ext import tasks, commands
 from DBmanager import DBManager, PresetData, PresetTag, DBDataTag, get_valid_api
-
+from searchengine import SearchEngine, get_preset_result
 
 @tasks.loop(seconds=60)
 async def noti_loop(bot:commands.Bot):
     dbmanger = DBManager()
     users = dbmanger.get_all_users()
     
-    for user in users:
+    for user_idx in range(len(users)):
         # preset 존재하는지 확인
         # 추후엔 길드가 봇에게 있는 길드인지 확인
-        if len(user.get(DBDataTag.preset)) != 0:
+        if len(users[user_idx].get(DBDataTag.preset)) != 0:
             # check api validity
-            api = get_valid_api(user.get(DBDataTag.api))
-            if len(api) == 0:
+            api_list = get_valid_api(users[user_idx].get(DBDataTag.api))
+            if len(api_list) == 0:
                 continue
             
-            user_presets = user.get(DBDataTag.preset)
-            for preset in user_presets:
-                pass
+            user_presets = users[user_idx].get(DBDataTag.preset)
+            
+            for preset_idx in range(len(user_presets)):
+                noti_rst = get_preset_result(user_presets[preset_idx], api_list)
+                print('notification result is ', noti_rst)
+            
+            users[user_idx][DBDataTag.api] = api_list
+            users[user_idx][DBDataTag.preset] = user_presets
+    
+    dbmanger.save_user_info(users)
                 # 모든 프리셋 검색 시작.
                 # 한 프리셋의 경우, 우선 가능한 api key 찾기.
                 # 가능한 api key로 새로운 search_engine 만들기

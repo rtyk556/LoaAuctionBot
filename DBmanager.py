@@ -60,7 +60,7 @@ def singleton(class_):
 class DBManager():
     def __init__(self):
         self.dataPath = './data.json'
-        self.basicData = {
+        self.basicUserData = {
                     DBDataTag.user_id : 0,
                     DBDataTag.guild : [],
                     DBDataTag.api : [],
@@ -77,7 +77,7 @@ class DBManager():
                 if user.get(DBDataTag.user_id) == userid:
                     return
             
-            user_data = self.basicData
+            user_data = self.basicUserData
             user_data[DBDataTag.user_id] = userid
             data.get(DBDataTag.users).append(user_data)
             
@@ -126,6 +126,19 @@ class DBManager():
             return data.get(DBDataTag.users)
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
+    
+    def save_user_info(self, users):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            data[DBDataTag.users] = users
+            
+            with open(self.dataPath, 'w') as outfile:
+                json.dump(data, outfile, indent=4)
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
+                
 
 def get_valid_api(api_list:list):
     rst = []
@@ -136,7 +149,6 @@ def get_valid_api(api_list:list):
         else:
             valid_time = datetime.datetime.strptime(api[APITag.valid_time], "%Y-%m-%d %H:%M:%S")
             if now > valid_time:
-                print('it is valid api')
                 rst.append(api)
     return rst
         
