@@ -1,7 +1,8 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import token_value
 import message
+import notification
 
 TOKEN = token_value.BOT_TOKEN
 
@@ -11,12 +12,12 @@ intents = discord.Intents.all()
 
 bot = commands.Bot(command_prefix='>', intents=intents)
 
-
 @bot.event
 async def on_ready():
     for guild in bot.guilds:
         for channel in guild.text_channels:
             await channel.send('디코 봇 이제 켜짐')
+    notification.noti_loop.start(bot)
 
 
 embed = discord.Embed(

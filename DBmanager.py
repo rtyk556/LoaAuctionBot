@@ -1,5 +1,6 @@
 import json
 import enum
+import datetime
 
 #db manager에 필요한 내용
 # 새 유저 등록, 프리셋 등록, api 등록, get 유저 데이터
@@ -117,3 +118,28 @@ class DBManager():
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
     
+    def get_all_users(self):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            return data.get(DBDataTag.users)
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
+
+def get_valid_api(api_list:list):
+    rst = []
+    for api in api_list:
+        now = datetime.datetime.now()
+        if api[APITag.valid_time] == None:
+            rst.append(api)
+        else:
+            valid_time = datetime.datetime.strptime(api[APITag.valid_time], "%Y-%m-%d %H:%M:%S")
+            if now > valid_time:
+                print('it is valid api')
+                rst.append(api)
+    return rst
+        
+class APITag(str, enum.Enum):
+    key = 'key',
+    valid_time = 'valid_time'
