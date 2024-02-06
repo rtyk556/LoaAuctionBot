@@ -181,11 +181,11 @@ def get_preset_result(preset:dict, api_list:list):
                     
                     for idx in range(0, len(items)):
                         # 가격 조건보다 높아진 매물이 등장하면 loop 탈출
-                        itemOptions = items[idx].get(AuctionItemTagType.auctionInfo)
+                        itemAuctionInfo = items[idx].get(AuctionItemTagType.auctionInfo)
                         if preset[DBmanager.PresetTag.search_option][0].get('Sort') == SortOptionType.buyPrice:
-                            itemPrice = itemOptions.get(AuctionInfoTagType.buyPrice)
+                            itemPrice = itemAuctionInfo.get(AuctionInfoTagType.buyPrice)
                         else:
-                            itemPrice = itemOptions.get(AuctionInfoTagType.startPrice)
+                            itemPrice = itemAuctionInfo.get(AuctionInfoTagType.startPrice)
     
                         if itemPrice > preset[DBmanager.PresetTag.condition]:
                             foundAllItem = True
@@ -196,7 +196,8 @@ def get_preset_result(preset:dict, api_list:list):
                         if subengrave_list == [] and not items[idx] in rst:
                             rst.append(items[idx])
                         else:
-                            for option in itemOptions:
+                            item_options = items[idx].get(AuctionItemTagType.options)
+                            for option in item_options:
                                 if option.get(ItemOptionTagType.type) == ItemOptionTagType.engrave and option.get(ItemOptionTagType.optionName) in subengrave_list and not items[idx] in rst:
                                     rst.append(items[idx])
                                     break
