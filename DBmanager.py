@@ -1,5 +1,6 @@
 import json
 import enum
+import datetime
 
 #db manager에 필요한 내용
 # 새 유저 등록, 프리셋 등록, api 등록, get 유저 데이터
@@ -59,7 +60,7 @@ def singleton(class_):
 class DBManager():
     def __init__(self):
         self.dataPath = './data.json'
-        self.basicData = {
+        self.basicUserData = {
                     DBDataTag.user_id : 0,
                     DBDataTag.guild : [],
                     DBDataTag.api : [],
@@ -76,7 +77,7 @@ class DBManager():
                 if user.get(DBDataTag.user_id) == userid:
                     return
             
-            user_data = self.basicData
+            user_data = self.basicUserData
             user_data[DBDataTag.user_id] = userid
             data.get(DBDataTag.users).append(user_data)
             
@@ -117,3 +118,40 @@ class DBManager():
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
     
+    def get_all_users(self):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            return data.get(DBDataTag.users)
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
+    
+    def save_user_info(self, users):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            data[DBDataTag.users] = users
+            
+            with open(self.dataPath, 'w') as outfile:
+                json.dump(data, outfile, indent=4)
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
+                
+
+def get_valid_api(api_list:list):
+    rst = []
+    for api in api_list:
+        now = datetime.datetime.now()
+        if api[APITag.valid_time] == None:
+            rst.append(api)
+        else:
+            valid_time = datetime.datetime.strptime(api[APITag.valid_time], "%Y-%m-%d %H:%M:%S")
+            if now > valid_time:
+                rst.append(api)
+    return rst
+        
+class APITag(str, enum.Enum):
+    key = 'key',
+    valid_time = 'valid_time'
