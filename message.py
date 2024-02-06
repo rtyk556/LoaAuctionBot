@@ -3,6 +3,7 @@ import discord
 from jsonobject import *
 from searchengine import SearchEngine
 import pyllist
+import DBmanager
 
 first_message = {
   "embeds": 
@@ -194,11 +195,16 @@ class APIView(discord.ui.View):
     def __init__(self):
         super().__init__()
         
-
+    # api view에서 조회 버튼 클릭 -> interaction에서 user id 확인 가능. 해당 user id로 get_user_api
+    # api list로 embed 결과 보여주기. 삭제 버튼과 처음으로 버튼 추가.
     @discord.ui.button(label='API 조회', style=discord.ButtonStyle.primary)
     async def button_check_api(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(content="api 버튼 클릭됨", embed=None)
-     
+      view = APICheckView(interaction.user.id)
+      await interaction.response.edit_message(embed=view.embed, view=view)
+    
+    # api 키와 라벨 입력해야한다. key가 겹치는 경우도 생각해야함.
+    # 키와 라벨 입력은 modal 형식으로 해야할 듯
+    # 겹치는 키 없으면 등록 완료 메시지 보내기
     @discord.ui.button(label='API 등록', style=discord.ButtonStyle.primary)
     async def button_register_api(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(content="api 버튼 클릭됨", embed=None)
@@ -208,6 +214,27 @@ class APIView(discord.ui.View):
         view = FirstView()
         await interaction.response.edit_message(embed=view.embed, view=view)
 
+class APICheckView(discord.ui.View):
+  embed = discord.Embed(title='등록된 API 조회')
+  
+  def __init__(self, user_id):
+    super().__init__()
+    dbManager = DBmanager.DBManager()
+    curAPI = dbManager.get_user_api(user_id)
+    description = ''
+    for api in curAPI:
+      description += f'### 라벨명\n```\n{api.get(DBmanager.APITag.label)}\n```\n### Key\n```\n{api.get(DBmanager.APITag.key)}\n```\n\n'
+    self.embed.description = description
+  
+  # 버튼은 api 삭제, 처음으로
+  @discord.ui.button(label='API 삭제', style=discord.ButtonStyle.primary)
+  async def button_register_api(self, interaction: discord.Interaction, button: discord.ui.Button):
+      await interaction.response.edit_message(content="api 버튼 클릭됨", embed=None)
+    
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
 
 class NotiAcceTypeView(discord.ui.View):
     # __instance = None

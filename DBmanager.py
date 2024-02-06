@@ -138,6 +138,19 @@ class DBManager():
                 json.dump(data, outfile, indent=4)
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
+    
+    def get_user_api(self, user_id):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            users = data.get(DBDataTag.users)
+            for user in users:
+                if user.get(DBDataTag.user_id) == user_id:
+                    return user.get(DBDataTag.api)
+            return []
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
                 
 
 def get_valid_api(api_list:list):
@@ -153,5 +166,6 @@ def get_valid_api(api_list:list):
     return rst
         
 class APITag(str, enum.Enum):
+    label = 'label'
     key = 'key',
     valid_time = 'valid_time'
