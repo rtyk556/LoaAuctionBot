@@ -144,29 +144,35 @@ def get_preset_result(preset:dict, api_list:list):
     rst = []
     if len(api_list) == 0:
         raise Exception('Cannot find api list.')
-    headers = {
-        'accept' : 'application/json',
-        'authorization' : 'bearer ' + api_list[0][DBmanager.APITag.key]
-    }
-    loaPageSize = 10
     
-    response = requests.post(url, headers=headers, json=preset[DBmanager.PresetTag.search_option][0])
-    print('first response for getting total item num : ', response.status_code)
-    try:
-        totalItemNum = response.json().get(ResponseJsonTagType.totalCount)
-        totalPageIndex = math.ceil(totalItemNum/loaPageSize)
-    except:
-        print('Error has occured in get_preset_result. ', response.status_code)
+    loaPageSize = 10
     
     curPageIndex = 0
     
     foundAllItem = False
+    totalItemNum = 0
+    totalPageIndex = None
     for api in api_list:
+        
         getNextAPI = False
         headers = {
             'accept' : 'application/json',
             'authorization' : 'bearer ' + api[DBmanager.APITag.key]
         }
+        
+        if totalPageIndex == None:
+            response = requests.post(url, headers=headers, json=preset[DBmanager.PresetTag.search_option][0])
+            print('first response for getting total item num : ', response.status_code)
+            if response.status_code != 200:
+                getNextAPI = True
+            else:
+                try:
+                    totalItemNum = response.json().get(ResponseJsonTagType.totalCount)
+                    totalPageIndex = math.ceil(totalItemNum/loaPageSize)
+                except:
+                    print('Error has occured in get_preset_result. ', response.status_code)
+        
+        
         if totalItemNum != 0:
             print('total item num is : ', totalItemNum)
             for curPageIndex in range(curPageIndex, totalPageIndex):
@@ -217,13 +223,23 @@ def get_preset_result(preset:dict, api_list:list):
             search_history.extend(rst)
             # api, preset 관련 json 파일 수정 필요
             preset[DBmanager.PresetTag.search_history] = search_history
-            return rst
-        elif totalItemNum == 0:
             return rst        
         if getNextAPI:
             valid_time = datetime.datetime.now() + datetime.timedelta(seconds=60)
             time_str = valid_time.strftime("%Y-%m-%d %H:%M:%S")
+            print("Change API valid time. ", time_str)
             api[DBmanager.APITag.valid_time] = time_str
             continue
 
     return rst
+
+def check_api_validity(api_key):
+    url = 'https://developer-lostark.game.onstove.com/news/events'
+    headers = {
+        'accept' : 'application/json',
+        'authorization' : 'bearer ' + api_key
+        }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return True
+    return False
