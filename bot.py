@@ -119,10 +119,14 @@ async def button_command(ctx):
     bot.add_view(MyButtonView(), message, button_callback)
 
 @bot.command(name='test')
-async def test(ctx:commands.context):
+async def test(ctx:commands.Context):
     print(ctx)
     view = message.FirstView()
     await ctx.send(embed=view.embed, view=view)
+
+# @bot.slash_command(name="ephemeral", description="Sends an ephemeral message")
+# async def ephemeral(interaction: discord.Interaction):
+#     await interaction.response.send_message("이 메시지는 일시적입니다.", ephemeral=True)
 
 @bot.command()
 async def loopTest(ctx:commands.context):
