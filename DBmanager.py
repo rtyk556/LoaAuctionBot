@@ -177,7 +177,25 @@ class DBManager():
                 json.dump(data, outfile, indent=4)
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
-                
+    
+    def add_new_api(self, user_id, api_label, api_key):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            users = data.get(DBDataTag.users)
+            new_api = {APITag.label : api_label, APITag.key : api_key, APITag.valid_time : None}
+            
+            self.add_new_user(user_id)
+
+            for user_idx in range(len(users)):
+                if users[user_idx].get(DBDataTag.user_id) == user_id:
+                    users[user_idx][DBDataTag.api].append(new_api)
+                    break
+            with open(self.dataPath, 'w') as outfile:
+                json.dump(data, outfile, indent=4)
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
 
 def get_valid_api(api_list:list):
     rst = []
