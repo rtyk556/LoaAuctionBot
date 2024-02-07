@@ -202,7 +202,7 @@ class APIView(discord.ui.View):
       view = APICheckView(interaction.user.id)
       await interaction.response.edit_message(embed=view.embed, view=view)
     
-    # api 키와 라벨 입력해야한다. key가 겹치는 경우도 생각해야함.
+    # api 키와 라벨 입력해야한다. label과 key가 겹치는 경우도 생각해야함.
     # 키와 라벨 입력은 modal 형식으로 해야할 듯
     # 겹치는 키 없으면 등록 완료 메시지 보내기
     @discord.ui.button(label='API 등록', style=discord.ButtonStyle.primary)
@@ -216,26 +216,72 @@ class APIView(discord.ui.View):
 
 class APICheckView(discord.ui.View):
   embed = discord.Embed(title='등록된 API 조회')
-  
+  curAPI = []
   def __init__(self, user_id):
     super().__init__()
     dbManager = DBmanager.DBManager()
-    curAPI = dbManager.get_user_api(user_id)
+    self.curAPI = dbManager.get_user_api(user_id)
     description = ''
-    for api in curAPI:
+    for api in self.curAPI:
       description += f'### 라벨명\n```\n{api.get(DBmanager.APITag.label)}\n```\n### Key\n```\n{api.get(DBmanager.APITag.key)}\n```\n\n'
     self.embed.description = description
   
   # 버튼은 api 삭제, 처음으로
   @discord.ui.button(label='API 삭제', style=discord.ButtonStyle.primary)
-  async def button_register_api(self, interaction: discord.Interaction, button: discord.ui.Button):
-      await interaction.response.edit_message(content="api 버튼 클릭됨", embed=None)
+  async def button_delete_api(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = APIDeleteView(self.curAPI)
+      await interaction.response.edit_message(embed=view.embed, view=view)
     
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
       await interaction.response.edit_message(embed=view.embed, view=view)
 
+class APIDeleteView(discord.ui.View):
+  embed = discord.Embed(title="삭제할 API 선택", description='삭제할 API를 선택하고 삭제 버튼을 눌러주세요')
+  delete_list = []
+  def __init__(self, apiList:list):
+    super().__init__()
+    apiOptions=[]
+    for api in apiList:
+      apiOptions.append(discord.SelectOption(
+        label=api.get(DBmanager.APITag.label)
+      ))
+    self.select_delete_API.options = apiOptions
+  
+  @discord.ui.select(placeholder="API 라벨")
+  async def select_delete_API(self, interaction:discord.Interaction, select: discord.ui.Select):
+    for option in self.select_delete_API.options:
+      option.default = False
+    
+    self.delete_list = select.values
+    
+    options = self.select_delete_API.options
+    for i in range(len(options)):
+      if options[i].label in select.values:
+        options[i].default = True
+    
+    self.select_delete_API.options = options
+        
+    # dbManager = DBmanager.DBManager()
+    # for api_label in delete_list:
+    #   dbManager.delete_api_by_label(interaction.user.id, api_label)
+    await interaction.response.edit_message(embed=self.embed, view=self)
+  
+  @discord.ui.button(label='API 삭제', style=discord.ButtonStyle.primary)
+  async def button_delete_api(self, interaction: discord.Interaction, button: discord.ui.Button):
+      dbManager = DBmanager.DBManager()
+      
+      for api_label in self.delete_list:
+        dbManager.delete_api_by_label(interaction.user.id, api_label)
+      
+      await interaction.response.edit_message(content='API 삭제 완료', embed=None, view=None)
+    
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+  
 class NotiAcceTypeView(discord.ui.View):
     # __instance = None
     embed = discord.Embed.from_dict(select_acce_type_message)

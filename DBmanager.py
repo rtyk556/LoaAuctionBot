@@ -151,6 +151,32 @@ class DBManager():
             return []
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
+    
+    def delete_api_by_label(self, user_id, api_label):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            users = data.get(DBDataTag.users)
+            api_list = None
+            for idx in range(len(users)):
+                if users[idx].get(DBDataTag.user_id) == user_id:
+                    api_list = users[idx].get(DBDataTag.api)
+            
+            if api_list == None:
+                return
+            
+            for api in api_list:
+                if api.get(APITag.label) == api_label:
+                    api_list.remove(api)
+            
+            users[idx][DBDataTag.api] = api_list
+            data[DBDataTag.users] = users
+
+            with open(self.dataPath, 'w') as outfile:
+                json.dump(data, outfile, indent=4)
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
                 
 
 def get_valid_api(api_list:list):
