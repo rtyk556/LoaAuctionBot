@@ -2,7 +2,7 @@ from typing import Optional
 import discord
 from discord.interactions import Interaction
 from jsonobject import *
-from searchengine import SearchEngine, check_api_validity
+from searchengine import SearchEngine, check_api_validity, OptionLabel
 import pyllist
 import DBmanager
 
@@ -135,77 +135,138 @@ etc_2nd_option_message = {
       "title": "부가 요소 검색 설정 ( 2/2 )"
   }
 
-# button_components = [
-#   [
-#     discord.ui.Button(style=discord.ButtonStyle.blurple, label="파란 버튼"),
-#     discord.ui.Button(style=discord.ButtonStyle.red, label="빨간 버튼"),
-#   ]
-# ]
-
-# class FirstPage(discord.ui.View):
-#   def __init__(self):
-#     super().__init__()
-
-#   @discord.ui.button(label='API키',  style=discord.ButtonStyle.primary)
-#   async def button_api(self, button: discord.ui.Button, interaction: discord.Interaction):
-#     await interaction.message.edit(content="api버튼 클릭됨")
-    
-  
-#   @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
-#   async def button_search(self, button: discord.ui.Button, interaction: discord.Interaction):
-#     await interaction.message.edit(content="매물 검색 버튼 클릭됨")
-  
-#   @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.primary)
-#   async def button_noti(self, button: discord.ui.Button, interaction: discord.Interaction):
-#     await interaction.message.edit(content="알림 설정 버튼 클릭됨")
-
 class FirstView(discord.ui.View):
-  # __instance = None
   
   embed = discord.Embed.from_dict(first_message["embeds"])
   def __init__(self):
-      # if FirstView.__instance:
-      #   self.getInstance()
       super().__init__()
-    
-  # @classmethod
-  # def getInstance(cls):
-  #   if not cls.__instance:
-  #     cls.__instance = FirstView()
-  #   return cls.__instance
 
   @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
   async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
-    ## 메시지 수정하면 content, embed, view는 따로 가져가는 것 같다. 필요한 요소인 embed와 view만 수정하는 방식으로 진행하면 될 듯
     view = APIView()
     await interaction.response.edit_message(embed=view.embed, view=view)
     
-
-  @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.primary)
-  async def button_notification(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.edit_message(content="알림 설정 버튼 클릭됨", embed=None)
+  @discord.ui.button(label='알림 목록', style=discord.ButtonStyle.primary)
+  async def button_notification_lists(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = NotificationListView(interaction.user.id)
+    await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = NotiAcceTypeView()
     await interaction.response.edit_message(embed=view.embed, view=view)
-        
-        
+
+class NotificationListView(discord.ui.View):
+  embed = discord.Embed(title="등록된 알림 설정 목록")
+
+  def __init__(self, user_id):
+    super().__init__()
+    self.presets = DBmanager.DBManager().get_user_presets(user_id)
+    
+    text = ''
+    for preset in self.presets:
+      search_option = preset.get(DBmanager.PresetTag.search_option)[0]
+      option = SearchOptionParser(search_option)
+      subengraves = preset.get(DBmanager.PresetTag.search_option)[1]
+      text += f'### 장신구 종류\n> {option.acceType}\n    '
+      text += f'### 메인각인\n> {option.engrave[0][0]}\n최소 : {option.engrave[0][1]}, 최대 : {option.engrave[0][2]}\n'
+      if len(option.engrave) == 1 and len(subengraves) == 0:
+        text += f'### 서브각인\n> 없음\n'
+      elif len(option.engrave) == 2:
+        sub = option.engrave[1]
+        text += f'### 서브각인\n> {sub[0]}\n최소 : {sub[1]}, 최대 : {sub[2]}\n'
+      elif len(subengraves) != 0:
+        text += f'### 서브각인\n> {subengraves}\n'
+      text += f'### 스탯\n> {option.stats}\n'
+      text += f'### 품질\n> {option.quality} 이상\n'
+      text += f'### 아이템 등급\n> {option.grade}\n'
+      text += f'### 알림 설정 가격\n> {option.sort} {preset[DBmanager.PresetTag.condition]} 이하\n'
+      text += '-----------------------------------\n'
+
+    self.embed.description = text
+    # userid에 등록된 preset 목록은 embed로 보여줌
+    # 프리셋 삭제 버튼, 처음으로 버튼
+    # 프리셋 삭제 버튼 누르면 새로운 view로 삭제할 프리셋 선택
+
+  @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.primary)
+  async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view=NotificationDeleteView(self.presets)
+    await interaction.response.edit_message(embed=view.embed, view=view)
+    
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+
+class NotificationDeleteView(discord.ui.View):
+  embed = discord.Embed(title="삭제할 프리셋 선택", description="삭제할 프리셋을 선택하고 삭제 버튼을 눌러주세요.")
+  delete_list = []
+  preset_list = []
+  def __init__(self, presetList:list):
+    super().__init__()
+    presetOptions = []
+    self.preset_list = presetList
+
+    description_txt = ''
+    idx = 0
+    for preset in presetList:
+      search_option = preset[DBmanager.PresetTag.search_option][0]
+      subengraves = preset[DBmanager.PresetTag.search_option][1]
+      option = SearchOptionParser(search_option)
+      if len(option.engrave) == 1:
+        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{subengraves}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이상\n'
+      elif len(option.engrave) == 2:
+        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{option.engrave[1][0]}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이상\n'
+      presetOptions.append(discord.SelectOption(
+        label=f'{idx+1}번',
+        value=idx
+      ))
+      idx += 1
+    self.select_delete_preset.options = presetOptions
+    self.embed.description = description_txt
+
+  @discord.ui.select(placeholder="알림 프리셋")
+  async def select_delete_preset(self, interaction:discord.Interaction, select: discord.ui.Select):
+    for option in self.select_delete_preset.options:
+      option.default = False
+    
+    d_list = []
+    for presetIdx in select.values:
+      d_list.append(self.preset_list[int(presetIdx)])
+    self.delete_list = d_list
+    
+    options = self.select_delete_preset.options
+    for i in range(len(options)):
+      if options[i].value in select.values:
+        options[i].default = True
+    
+    self.select_delete_preset.options = options
+    await interaction.response.edit_message(embed=self.embed, view=self)
+  
+  @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.red)
+  async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
+      dbManager = DBmanager.DBManager()
+      
+      for preset in self.delete_list:
+        dbManager.delete_preset(interaction.user.id, preset)
+      
+      await interaction.response.edit_message(content='알림 프리셋 삭제 완료', embed=None, view=None)
+    
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+
 class APIView(discord.ui.View):
     embed = discord.Embed.from_dict(api_message)
     def __init__(self):
         super().__init__()
         
-    # api view에서 조회 버튼 클릭 -> interaction에서 user id 확인 가능. 해당 user id로 get_user_api
-    # api list로 embed 결과 보여주기. 삭제 버튼과 처음으로 버튼 추가.
     @discord.ui.button(label='API 조회', style=discord.ButtonStyle.primary)
     async def button_check_api(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = APICheckView(interaction.user.id)
       await interaction.response.edit_message(embed=view.embed, view=view)
     
-    # api 키와 라벨 입력해야한다. label과 key가 겹치는 경우도 생각해야함.
-    # 키와 라벨 입력은 modal 형식으로 해야할 듯
-    # 겹치는 키 없으면 등록 완료 메시지 보내기
     @discord.ui.button(label='API 등록', style=discord.ButtonStyle.primary)
     async def button_register_api(self, interaction: discord.Interaction, button: discord.ui.Button):
         modal = APIRegisterModal()
@@ -295,18 +356,9 @@ class APIDeleteView(discord.ui.View):
       await interaction.response.edit_message(embed=view.embed, view=view)
   
 class NotiAcceTypeView(discord.ui.View):
-    # __instance = None
     embed = discord.Embed.from_dict(select_acce_type_message)
     def __init__(self):
-      # if NotiAcceTypeView.__instance:
-      #   self.getInstance()
       super().__init__()
-    
-    # @classmethod
-    # def getInstance(cls):
-    #   if not cls.__instance:
-    #     cls.__instance = NotiAcceTypeView()
-    #   return cls.__instance
     
     @discord.ui.select(placeholder="장신구 종류",
                        min_values=1, max_values=1,
@@ -355,14 +407,11 @@ class NotiAcceTypeView(discord.ui.View):
     async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
       await interaction.response.edit_message(embed=view.embed, view=view)
-      # view = FirstView.getInstance()
-      # await interaction.response.edit_message(embed=view.embed, view = view)
     
     @discord.ui.button(label='-->', style=discord.ButtonStyle.primary, disabled=True)
     async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = NotiMainOptView()
       await interaction.response.edit_message(embed=view.embed, view=view)
-      # await interaction.response.edit_message(content="Not implemented", embed=None)
     
     @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
     async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -744,7 +793,7 @@ class Noti2ndEtcOptView(discord.ui.View):
                               value = SortOptionType.bidPrice
                           ),
                           discord.SelectOption(
-                              label="구입가 기준",
+                              label="구매가 기준",
                               value = SortOptionType.buyPrice,
                               default=True
                           )
