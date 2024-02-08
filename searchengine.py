@@ -13,7 +13,8 @@ headers = {
 url = 'https://developer-lostark.game.onstove.com/auctions/items'
 
 class SearchEngine():
-    def __init__(self):
+    def __init__(self, container):
+        self.container = container
         self.subEngraveList = []
         self.totalItemNum = -1
         self.totalPageIndex = 0
@@ -23,7 +24,7 @@ class SearchEngine():
         self.botPageSize = 5
     
     def make_search_option(self, pageNum=1):
-        container = SearchOptionContainer()
+        container = self.container
         basic_search_option = {
         'ItemGradeQuality' : container.quality,
         'Sort': container.sort_option,
@@ -87,10 +88,9 @@ class SearchEngine():
             except Exception as e:
                 print('Error has occured in get_search_results : ', e)
         rst = []
-        
+        curPageIndex = 0
+        curItemIndex = 0
         if self.totalItemNum != 0:
-            curPageIndex = 0
-            curItemIndex = 0
             self.curPageIndex, self.curItemIndex = self.get_next_index()
             if self.curPageIndex == None or self.curItemIndex == None:
                 return []

@@ -140,6 +140,7 @@ class FirstView(discord.ui.View):
   embed = discord.Embed.from_dict(first_message["embeds"])
   def __init__(self):
       super().__init__()
+      self.container = SearchOptionContainer()
 
   @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
   async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -153,7 +154,7 @@ class FirstView(discord.ui.View):
   
   @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = NotiAcceTypeView()
+    view = NotiAcceTypeView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
 
 class NotificationListView(discord.ui.View):
@@ -357,8 +358,9 @@ class APIDeleteView(discord.ui.View):
   
 class NotiAcceTypeView(discord.ui.View):
     embed = discord.Embed.from_dict(select_acce_type_message)
-    def __init__(self):
+    def __init__(self, container):
       super().__init__()
+      self.container = container
     
     @discord.ui.select(placeholder="장신구 종류",
                        min_values=1, max_values=1,
@@ -385,13 +387,12 @@ class NotiAcceTypeView(discord.ui.View):
       #   dict를 하면 장점 - 저장이 쉽다. 단점 - key를 text로 하거나 enum으로 입력해야함. 나중에 문제 일으키기 쉬움
       #   class로 하면 장점 - 내가 직접 요소들 다 지정하면 문제 발견 쉬움 단점 - 하나의 인스턴스로 만들어서 계속 가지고 관리해야함. 싱글톤하면 처음 화면으로 돌아갈 때 문제가 될 것. 그냥 인스턴스면 어떻게 다음 과정으로 옮겨줄지 난감
       # 선택을 해야 다음 버튼 활성화. 선택 값을 조회해서 값이 유효하면 활성화 하는 방식으로 진행. 아니면 disable로 만들기
-      container = SearchOptionContainer()
       for option in self.select_acce_type.options:
           option.default = False
       if len(select.values) != 0:
         self.button_next.disabled = False
         value = select.values[0]
-        container.acceType = int(value)
+        self.container.acceType = int(value)
 
         if int(value) == AccessoryType.necklace:
           self.select_acce_type.options[0].default = True
@@ -410,7 +411,7 @@ class NotiAcceTypeView(discord.ui.View):
     
     @discord.ui.button(label='-->', style=discord.ButtonStyle.primary, disabled=True)
     async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
-      view = NotiMainOptView()
+      view = NotiMainOptView(self.container)
       await interaction.response.edit_message(embed=view.embed, view=view)
     
     @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
@@ -420,8 +421,9 @@ class NotiAcceTypeView(discord.ui.View):
 
 class NotiMainOptView(discord.ui.View):
   embed = discord.Embed.from_dict(get_main_opt_message())
-  def __init__(self, engrave: str='미입력' ):
+  def __init__(self, container, engrave: str='미입력' ):
     super().__init__()
+    self.container = container
     self.input_engrave = self.search_engrave(engrave)
     self.embed=discord.Embed.from_dict(get_main_opt_message(self.input_engrave))
   
@@ -437,10 +439,10 @@ class NotiMainOptView(discord.ui.View):
     publicEngraveStr = [ x.get(TagType.text).replace(" ", "") for x in publicEngrave]
     
     if input_engrave in classEngraveStr:
-      SearchOptionContainer().mainEngrave = classEngrave[classEngraveStr.index(input_engrave)].get(TagType.codeValue)
+      self.container.mainEngrave = classEngrave[classEngraveStr.index(input_engrave)].get(TagType.codeValue)
       return classEngrave[classEngraveStr.index(input_engrave)].get(TagType.text)
     elif input_engrave in publicEngraveStr:
-      SearchOptionContainer().mainEngrave = publicEngrave[publicEngraveStr.index(input_engrave)].get(TagType.codeValue)
+      self.container.mainEngrave = publicEngrave[publicEngraveStr.index(input_engrave)].get(TagType.codeValue)
       return publicEngrave[publicEngraveStr.index(input_engrave)].get(TagType.text)
     wrong_message = "각인을 찾을 수 없습니다. 정확한 이름을 입력해주세요."
     return wrong_message
@@ -467,7 +469,7 @@ class NotiMainOptView(discord.ui.View):
       option.default = False
     
     if len(select.values) != 0:
-      SearchOptionContainer().mainEngraveMin = int(select.values[0])
+      self.container.mainEngraveMin = int(select.values[0])
       for option in self.select_minEngrave.options:
         if option.label == select.values[0]:
           option.default = True
@@ -494,7 +496,7 @@ class NotiMainOptView(discord.ui.View):
       option.default = False
       
     if len(select.values) != 0:
-      SearchOptionContainer().mainEngraveMax = int(select.values[0])
+      self.container.mainEngraveMax = int(select.values[0])
       for option in self.select_maxEngrave.options:
         if option.label == select.values[0]:
           option.default = True
@@ -502,17 +504,17 @@ class NotiMainOptView(discord.ui.View):
   
   @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
   async def button_main_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
-      modal = MainOptModal()
+      modal = MainOptModal(self.container)
       await interaction.response.send_modal(modal)
 
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = NotiAcceTypeView()
+    view = NotiAcceTypeView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
   async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = NotiEtcOptView()
+    view = NotiEtcOptView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
@@ -522,10 +524,11 @@ class NotiMainOptView(discord.ui.View):
 
 class NotiEtcOptView(discord.ui.View):
   embed = discord.Embed.from_dict(get_etc_opt_message())
-  def __init__(self, subEngrave:list = []):
+  def __init__(self, container, subEngrave:list = []):
     super().__init__()
+    self.container = container
     self.embed = discord.Embed.from_dict(get_etc_opt_message(self.search_engraves(subEngrave)))
-    self.select_subStat.disabled = not(SearchOptionContainer().isNecklace())
+    self.select_subStat.disabled = not(self.container.isNecklace())
     
   def search_engraves(self, engraves:list):
     # 각인 값들을 입력받고 스페이스 제거 후에 jsonobject에 있는지 확인
@@ -547,7 +550,7 @@ class NotiEtcOptView(discord.ui.View):
       elif input in publicEngraveStr:
         rst_code.append(publicEngrave[publicEngraveStr.index(input)].get(TagType.codeValue))
         rst_text.append(publicEngrave[publicEngraveStr.index(input)].get(TagType.text))
-    SearchOptionContainer().subEngraves = rst_code
+    self.container.subEngraves = rst_code
     if len(rst_text) == 0:
       return "입력된 각인이 없습니다."
     return rst_text
@@ -573,12 +576,12 @@ class NotiEtcOptView(discord.ui.View):
       option.default = False
     
     if len(select.values) != 0:
-      SearchOptionContainer().subEngraveMin = int(select.values[0])
+      self.container.subEngraveMin = int(select.values[0])
       for option in self.select_minEngrave.options:
         if option.label == select.values[0]:
           option.default = True
     else:
-      SearchOptionContainer().subEngraveMin = 3
+      self.container.subEngraveMin = 3
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="각인 최대값",
@@ -602,12 +605,12 @@ class NotiEtcOptView(discord.ui.View):
       option.default = False
       
     if len(select.values) != 0:
-      SearchOptionContainer().subEngraveMax = int(select.values[0])
+      self.container.subEngraveMax = int(select.values[0])
       for option in self.select_maxEngrave.options:
         if option.label == select.values[0]:
           option.default = True
     else:
-      SearchOptionContainer().subEngraveMax = 6
+      self.container.subEngraveMax = 6
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="스탯",
@@ -642,7 +645,7 @@ class NotiEtcOptView(discord.ui.View):
         for option in self.select_mainStat.options:
           if option.label == select.values[0]:
             option.default = True
-        SearchOptionContainer().mainStat = rst[0]
+        self.container.mainStat = rst[0]
       else:
         raise IndexError("Main Stat result is not found in EtcOptView")
     await interaction.response.edit_message(embed=self.embed, view=self)
@@ -679,24 +682,24 @@ class NotiEtcOptView(discord.ui.View):
         for option in self.select_subStat.options:
           if option.label == select.values[0]:
             option.default = True
-        SearchOptionContainer().subStat = rst[0]
+        self.container.subStat = rst[0]
       else:
         raise IndexError("Sub Stat result is not found in EtcOptView")
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
   async def button_sub_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
-    modal = EtcOptModal()
+    modal = EtcOptModal(self.container)
     await interaction.response.send_modal(modal)
 
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = NotiMainOptView()
+    view = NotiMainOptView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
   async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = Noti2ndEtcOptView()
+    view = Noti2ndEtcOptView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
@@ -709,23 +712,32 @@ class EtcOptModal(discord.ui.Modal, title="서브 각인"):
   sub_2 = discord.ui.TextInput(label="서브 각인 2", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
   sub_3 = discord.ui.TextInput(label="서브 각인 3", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
   
+  def __init__(self, container):
+      super().__init__()
+      self.container = container
+  
   async def on_submit(self, interaction: discord.Interaction):
     subEngrave_list = [self.sub_1.value, self.sub_2.value, self.sub_3.value]
-    view = NotiEtcOptView(subEngrave=[x for x in subEngrave_list if x != ""])
+    view = NotiEtcOptView(self.container, subEngrave=[x for x in subEngrave_list if x != ""])
     await interaction.response.edit_message(embed=view.embed, view=view)
 
 class MainOptModal(discord.ui.Modal, title="메인 각인"):
     mainEngrave = discord.ui.TextInput(label="메인 옵션을 입력해 주세요.", placeholder="검색에 반드시 포함될 메인 각인을 입력해 주세요.")
     
+    def __init__(self, container):
+      super().__init__()
+      self.container = container
+
     async def on_submit(self, interaction: discord.Interaction):
-        view = NotiMainOptView(engrave=self.mainEngrave.value)
+        view = NotiMainOptView(self.container, engrave=self.mainEngrave.value)
         await interaction.response.edit_message(embed=view.embed, view=view)
   
 class Noti2ndEtcOptView(discord.ui.View):
   embed = discord.Embed.from_dict(etc_2nd_option_message)
   
-  def __init__(self):
+  def __init__(self, container):
     super().__init__()
+    self.container = container
   
   @discord.ui.select(placeholder="품질",
                        min_values=1, max_values=1,
@@ -756,7 +768,7 @@ class Noti2ndEtcOptView(discord.ui.View):
       option.default = False
     
     if len(select.values) != 0:
-      SearchOptionContainer().quality = select.values[0]
+      self.container.quality = select.values[0]
       for option in self.select_quality.options:
         if option.value == select.values[0]:
           option.default = True
@@ -779,7 +791,7 @@ class Noti2ndEtcOptView(discord.ui.View):
       self.select_item_grade.options[i].default = False
     
     if len(select.values) != 0:
-      SearchOptionContainer().grade = select.values
+      self.container.grade = select.values
       for i in range(len(self.select_item_grade.options)):
         if self.select_item_grade.options[i].label in select.values:
           self.select_item_grade.options[i].default = True
@@ -803,7 +815,7 @@ class Noti2ndEtcOptView(discord.ui.View):
       option.default = False
     
     if len(select.values) != 0:
-      SearchOptionContainer().sort_option = select.values[0]
+      self.container.sort_option = select.values[0]
       if select.values[0] == SortOptionType.bidPrice:
         self.select_sort_option.options[0].default = True
       elif select.values[0] == SortOptionType.buyPrice:
@@ -812,13 +824,12 @@ class Noti2ndEtcOptView(discord.ui.View):
   
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = NotiEtcOptView()
+    view = NotiEtcOptView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
   async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
-    container = SearchOptionContainer()
-    view = OptionResultView()
+    view = OptionResultView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
@@ -827,36 +838,37 @@ class Noti2ndEtcOptView(discord.ui.View):
     await interaction.response.edit_message(embed=view.embed, view=view)
 
 class OptionResultView(discord.ui.View):  
-  def __init__(self):
+  def __init__(self, container):
     super().__init__()
+    self.container = container
     self.embed = discord.Embed(title="검색 옵션", description="다음과 같은 옵션으로 검색합니다.", color=discord.Color.random()) 
-    self.embed.add_field(name="악세서리 종류", value=[x.get(AccessoryTagType.codeName) for x in accessory if x.get(AccessoryTagType.code) == SearchOptionContainer().acceType], inline=False)
+    self.embed.add_field(name="악세서리 종류", value=[x.get(AccessoryTagType.codeName) for x in accessory if x.get(AccessoryTagType.code) == self.container.acceType], inline=False)
     embMainEng=""
     for engrave in classEngrave+publicEngrave:
-      if SearchOptionContainer().mainEngrave == engrave.get(TagType.codeValue):
+      if self.container.mainEngrave == engrave.get(TagType.codeValue):
         embMainEng = engrave.get(TagType.text)
     self.embed.add_field(name="메인 각인", value=embMainEng, inline=True)
-    self.embed.add_field(name="각인 값 범위", value=f"{SearchOptionContainer().mainEngraveMin} ~ {SearchOptionContainer().mainEngraveMax}", inline=True)
+    self.embed.add_field(name="각인 값 범위", value=f"{self.container.mainEngraveMin} ~ {self.container.mainEngraveMax}", inline=True)
   
     embSubEng=[]
     for engrave in publicEngrave+classEngrave:
-      if engrave.get(TagType.codeValue) in SearchOptionContainer().subEngraves:
+      if engrave.get(TagType.codeValue) in self.container.subEngraves:
         embSubEng.append(engrave.get(TagType.text))
-    self.embed.add_field(name="서브 각인", value=embSubEng if len(SearchOptionContainer().subEngraves) != 0 else "미입력" , inline=False)
-    if len(SearchOptionContainer().subEngraves) != 0:
-      self.embed.add_field(name="각인 값 범위", value=f"{SearchOptionContainer().subEngraveMin} ~ {SearchOptionContainer().subEngraveMax}", inline=True)
+    self.embed.add_field(name="서브 각인", value=embSubEng if len(self.container.subEngraves) != 0 else "미입력" , inline=False)
+    if len(self.container.subEngraves) != 0:
+      self.embed.add_field(name="각인 값 범위", value=f"{self.container.subEngraveMin} ~ {self.container.subEngraveMax}", inline=True)
     
-    self.embed.add_field(name="스탯", value=[x.get(TagType.text) for x in stat if x.get(TagType.codeValue) == SearchOptionContainer().mainStat], inline=False)
-    if SearchOptionContainer().isNecklace():
-      self.embed.add_field(name="부스탯", value=[x.get(TagType.text) for x in stat if x.get(TagType.codeValue) == SearchOptionContainer().subStat], inline=True)
+    self.embed.add_field(name="스탯", value=[x.get(TagType.text) for x in stat if x.get(TagType.codeValue) == self.container.mainStat], inline=False)
+    if self.container.isNecklace():
+      self.embed.add_field(name="부스탯", value=[x.get(TagType.text) for x in stat if x.get(TagType.codeValue) == self.container.subStat], inline=True)
     
-    self.embed.add_field(name="품질", value=f"{int(SearchOptionContainer().quality)} 이상", inline = False)
-    self.embed.add_field(name="아이템 등급", value=SearchOptionContainer().grade, inline=True)
-    self.embed.add_field(name="정렬 기준", value="구매가 기준" if SearchOptionContainer().sort_option == SortOptionType.buyPrice else "입찰가 기준", inline=True)
+    self.embed.add_field(name="품질", value=f"{int(self.container.quality)} 이상", inline = False)
+    self.embed.add_field(name="아이템 등급", value=self.container.grade, inline=True)
+    self.embed.add_field(name="정렬 기준", value="구매가 기준" if self.container.sort_option == SortOptionType.buyPrice else "입찰가 기준", inline=True)
   
   @discord.ui.button(label='검색', style=discord.ButtonStyle.green)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = SearchResultView()
+    view = SearchResultView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
 
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
@@ -865,10 +877,11 @@ class OptionResultView(discord.ui.View):
     await interaction.response.edit_message(embed=view.embed, view=view)
 
 class SearchResultView(discord.ui.View):
-  def __init__(self):
+  def __init__(self, container):
     super().__init__()
+    self.container = container
     self.embed = discord.Embed(title="검색 결과", description="\n\n", color=discord.Color.random())
-    self.engine = SearchEngine()
+    self.engine = SearchEngine(self.container)
     self.embed_list = pyllist.dllist()
     if self.engine.totalItemNum == 0:
       self.embed.add_field(name="검색 결과가 없습니다.", value=" ")
@@ -921,18 +934,8 @@ class SearchResultView(discord.ui.View):
 
   @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.green)
   async def button_noti(self, interaction: discord.Interaction, button: discord.ui.Button):
-    modal = NotificationModal()
+    modal = NotificationModal(self.container)
     await interaction.response.send_modal(modal)
-    # engine = SearchEngine()
-    # while True:
-    #   import asyncio
-    #   result = engine.get_search_result()
-    #   contents = [x.get('AuctionInfo').get('BuyPrice') for x in result]
-    #   # await interaction.followup.send(content=f'result: {contents}', ephemeral=True)
-    #   # await interaction.response.send_message(content=f'result: {contents}', ephemeral=True)
-    #   await asyncio.sleep(60)
-    # contents = f"검색 결과 : {[x.get('AuctionInfo').get('BuyPrice') for x in engine.get_search_result()]}"
-    # await interaction.response.send_message(content=contents)
     
   @discord.ui.button(label='이전 검색 결과', style=discord.ButtonStyle.primary, disabled=True)
   async def button_prev_rst(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -967,6 +970,10 @@ class SearchResultView(discord.ui.View):
 class NotificationModal(discord.ui.Modal, title="알림 조건 가격"):
   price_condition = discord.ui.TextInput(label="알림 설정 가격", required=True, placeholder="해당 가격 이하인 매물이 생길 경우 메시지를 보냅니다.")
   
+  def __init__(self, container):
+    super().__init__()
+    self.container = container
+
   async def on_submit(self, interaction: discord.Interaction):
     import DBmanager
     dbmanager = DBmanager.DBManager()
@@ -977,7 +984,7 @@ class NotificationModal(discord.ui.Modal, title="알림 조건 가격"):
       await interaction.response.send_message(content='숫자로만 입력해주세요', ephemeral=True)
     
     preset = DBmanager.PresetData()
-    engine = SearchEngine()
+    engine = SearchEngine(self.container)
     preset.edit_preset(DBmanager.PresetTag.search_option, [engine.make_search_option(), engine.subEngraveList])
     preset.edit_preset(DBmanager.PresetTag.condition, price)
     dbmanager.add_preset(interaction.user.id, preset)
