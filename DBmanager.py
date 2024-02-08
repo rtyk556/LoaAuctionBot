@@ -117,6 +117,26 @@ class DBManager():
             
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
+    def delete_preset(self, userid, preset):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            
+            users = data[DBDataTag.users]
+
+            for idx in range(len(users)):
+                if users[idx][DBDataTag.user_id] == userid:
+                    if preset in users[idx][DBDataTag.preset]:
+                        users[idx][DBDataTag.preset].remove(preset)
+
+            data[DBDataTag.users] = users    
+            
+            with open(self.dataPath, 'w') as outfile:
+                json.dump(data, outfile, indent=4)
+            
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
     def get_user_presets(self, user_id):
         try:
             data = {}

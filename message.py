@@ -161,10 +161,10 @@ class NotificationListView(discord.ui.View):
 
   def __init__(self, user_id):
     super().__init__()
-    presets = DBmanager.DBManager().get_user_presets(user_id)
+    self.presets = DBmanager.DBManager().get_user_presets(user_id)
     
     text = ''
-    for preset in presets:
+    for preset in self.presets:
       search_option = preset.get(DBmanager.PresetTag.search_option)[0]
       option = SearchOptionParser(search_option)
       subengraves = preset.get(DBmanager.PresetTag.search_option)[1]
@@ -190,13 +190,73 @@ class NotificationListView(discord.ui.View):
 
   @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.primary)
   async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
-      pass
+    view=NotificationDeleteView(self.presets)
+    await interaction.response.edit_message(embed=view.embed, view=view)
     
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
       await interaction.response.edit_message(embed=view.embed, view=view)
+
+class NotificationDeleteView(discord.ui.View):
+  embed = discord.Embed(title="삭제할 프리셋 선택", description="삭제할 프리셋을 선택하고 삭제 버튼을 눌러주세요.")
+  delete_list = []
+  preset_list = []
+  def __init__(self, presetList:list):
+    super().__init__()
+    presetOptions = []
+    self.preset_list = presetList
+
+    description_txt = ''
+    idx = 0
+    for preset in presetList:
+      search_option = preset[DBmanager.PresetTag.search_option][0]
+      subengraves = preset[DBmanager.PresetTag.search_option][1]
+      option = SearchOptionParser(search_option)
+      if len(option.engrave) == 1:
+        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{subengraves}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이상\n'
+      elif len(option.engrave) == 2:
+        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{option.engrave[1][0]}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이상\n'
+      presetOptions.append(discord.SelectOption(
+        label=f'{idx+1}번',
+        value=idx
+      ))
+      idx += 1
+    self.select_delete_preset.options = presetOptions
+    self.embed.description = description_txt
+
+  @discord.ui.select(placeholder="알림 프리셋")
+  async def select_delete_preset(self, interaction:discord.Interaction, select: discord.ui.Select):
+    for option in self.select_delete_preset.options:
+      option.default = False
+    
+    d_list = []
+    for presetIdx in select.values:
+      d_list.append(self.preset_list[int(presetIdx)])
+    self.delete_list = d_list
+    
+    options = self.select_delete_preset.options
+    for i in range(len(options)):
+      if options[i].value in select.values:
+        options[i].default = True
+    
+    self.select_delete_preset.options = options
+    await interaction.response.edit_message(embed=self.embed, view=self)
   
+  @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.red)
+  async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
+      dbManager = DBmanager.DBManager()
+      
+      for preset in self.delete_list:
+        dbManager.delete_preset(interaction.user.id, preset)
+      
+      await interaction.response.edit_message(content='알림 프리셋 삭제 완료', embed=None, view=None)
+    
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+
 class APIView(discord.ui.View):
     embed = discord.Embed.from_dict(api_message)
     def __init__(self):
