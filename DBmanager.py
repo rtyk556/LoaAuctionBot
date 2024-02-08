@@ -117,7 +117,20 @@ class DBManager():
             
         except Exception as e:
             raise Exception("DBmanager cannot edit json file. ", e)
-    
+    def get_user_presets(self, user_id):
+        try:
+            data = {}
+            with open(self.dataPath, 'r') as json_file:
+                data = json.load(json_file)
+            
+            users = data.get(DBDataTag.users)
+            for user in users:
+                if user.get(DBDataTag.user_id) == user_id:
+                    return user.get(DBDataTag.preset)
+            return []
+        except Exception as e:
+            raise Exception("DBmanager cannot edit json file. ", e)
+
     def get_all_users(self):
         try:
             data = {}

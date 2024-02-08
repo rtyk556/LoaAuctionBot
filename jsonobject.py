@@ -648,3 +648,64 @@ stat = [
           "Class": ""
         }
 ]
+
+class OptionLabel(str, enum.Enum):
+    itemGradeQuality = 'ItemGradeQuality'
+    sort = 'Sort'
+    categoryCode = 'CategoryCode'
+    etcOptions = 'EtcOptions'
+    firstOption = 'FirstOption'
+    secondOption = 'SecondOption'
+    minValue = 'MinValue'
+    maxValue = 'MaxValue'
+    itemTier = 'ItemTier'
+    ItemGrade = 'ItemGrade'
+    sortCondition = 'SortCondition'
+    pageNumber = 'PageNo'
+  
+class SearchOptionParser():
+  def __init__(self, search_option):
+    self.acceType = self.get_acceType_name(search_option[OptionLabel.categoryCode])
+    self.engrave = self.get_engraves_list(search_option[OptionLabel.etcOptions])
+    self.stats = self.get_stats_list(search_option[OptionLabel.etcOptions])
+    self.quality = search_option[OptionLabel.itemGradeQuality]
+    self.grade = self.get_itemGrade(search_option)
+    self.sort = self.get_sort_option(search_option[OptionLabel.sort])
+
+  def get_acceType_name(self, acceCode):
+    for acce in accessory:
+      if acce[AccessoryTagType.code] == acceCode:
+        return acce[AccessoryTagType.codeName]
+    return ''
+
+  def get_sort_option(self, sort):
+    if sort == 'BUY_PRICE':
+      return '구매가 기준'
+    return '입찰가 기준'
+
+  def get_stats_list(self, etcOption):
+    rst = []
+    for option in etcOption:
+      if option[OptionLabel.firstOption] == 2:
+        for statobj in stat:
+          if statobj[TagType.codeValue] == option[OptionLabel.secondOption]:
+            rst.append(statobj[TagType.text])
+            break
+    return rst
+
+  def get_engraves_list(self, etcOption):
+    rst = []
+    for option in etcOption:
+      if option[OptionLabel.firstOption] == 3:
+        for engrave in classEngrave+publicEngrave:
+          if engrave[TagType.codeValue] == option[OptionLabel.secondOption]:
+            engrave_data = [engrave[TagType.text], option[OptionLabel.minValue], option[OptionLabel.maxValue]]
+            rst.append(engrave_data)
+            break
+    return rst
+  
+  def get_itemGrade(self, search_option):
+    itemGrade = search_option.get(OptionLabel.ItemGrade)
+    if itemGrade == None:
+      return ['유물', '고대']
+    return itemGrade

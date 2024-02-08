@@ -2,7 +2,7 @@ from typing import Optional
 import discord
 from discord.interactions import Interaction
 from jsonobject import *
-from searchengine import SearchEngine, check_api_validity
+from searchengine import SearchEngine, check_api_validity, OptionLabel
 import pyllist
 import DBmanager
 
@@ -146,17 +146,57 @@ class FirstView(discord.ui.View):
     view = APIView()
     await interaction.response.edit_message(embed=view.embed, view=view)
     
-
-  @discord.ui.button(label='알림 설정', style=discord.ButtonStyle.primary)
-  async def button_notification(self, interaction: discord.Interaction, button: discord.ui.Button):
-    await interaction.response.edit_message(content="알림 설정 버튼 클릭됨", embed=None)
+  @discord.ui.button(label='알림 목록', style=discord.ButtonStyle.primary)
+  async def button_notification_lists(self, interaction: discord.Interaction, button: discord.ui.Button):
+    view = NotificationListView(interaction.user.id)
+    await interaction.response.edit_message(embed=view.embed, view=view)
   
   @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = NotiAcceTypeView()
     await interaction.response.edit_message(embed=view.embed, view=view)
-        
-        
+
+class NotificationListView(discord.ui.View):
+  embed = discord.Embed(title="등록된 알림 설정 목록")
+
+  def __init__(self, user_id):
+    super().__init__()
+    presets = DBmanager.DBManager().get_user_presets(user_id)
+    
+    text = ''
+    for preset in presets:
+      search_option = preset.get(DBmanager.PresetTag.search_option)[0]
+      option = SearchOptionParser(search_option)
+      subengraves = preset.get(DBmanager.PresetTag.search_option)[1]
+      text += f'### 장신구 종류\n> {option.acceType}\n    '
+      text += f'### 메인각인\n> {option.engrave[0][0]}\n최소 : {option.engrave[0][1]}, 최대 : {option.engrave[0][2]}\n'
+      if len(option.engrave) == 1 and len(subengraves) == 0:
+        text += f'### 서브각인\n> 없음\n'
+      elif len(option.engrave) == 2:
+        sub = option.engrave[1]
+        text += f'### 서브각인\n> {sub[0]}\n최소 : {sub[1]}, 최대 : {sub[2]}\n'
+      elif len(subengraves) != 0:
+        text += f'### 서브각인\n> {subengraves}\n'
+      text += f'### 스탯\n> {option.stats}\n'
+      text += f'### 품질\n> {option.quality} 이상\n'
+      text += f'### 아이템 등급\n> {option.grade}\n'
+      text += f'### 알림 설정 가격\n> {option.sort} {preset[DBmanager.PresetTag.condition]} 이하\n'
+      text += '-----------------------------------\n'
+
+    self.embed.description = text
+    # userid에 등록된 preset 목록은 embed로 보여줌
+    # 프리셋 삭제 버튼, 처음으로 버튼
+    # 프리셋 삭제 버튼 누르면 새로운 view로 삭제할 프리셋 선택
+
+  @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.primary)
+  async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
+      pass
+    
+  @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
+  async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
+      view = FirstView()
+      await interaction.response.edit_message(embed=view.embed, view=view)
+  
 class APIView(discord.ui.View):
     embed = discord.Embed.from_dict(api_message)
     def __init__(self):
@@ -693,7 +733,7 @@ class Noti2ndEtcOptView(discord.ui.View):
                               value = SortOptionType.bidPrice
                           ),
                           discord.SelectOption(
-                              label="구입가 기준",
+                              label="구매가 기준",
                               value = SortOptionType.buyPrice,
                               default=True
                           )
