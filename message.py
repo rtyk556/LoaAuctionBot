@@ -154,6 +154,7 @@ class FirstView(discord.ui.View):
   
   @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
+    self.container.userid = interaction.user.id
     view = NotiAcceTypeView(self.container)
     await interaction.response.edit_message(embed=view.embed, view=view)
 

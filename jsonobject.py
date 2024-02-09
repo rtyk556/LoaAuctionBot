@@ -3,6 +3,7 @@ import asyncio
 
 class SearchOptionContainer():  
   def __init__(self):
+     self.userid = None
      self.acceType = None
      self.mainEngrave = None
      self.mainEngraveMin = 3

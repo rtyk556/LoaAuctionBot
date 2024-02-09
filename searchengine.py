@@ -2,13 +2,8 @@ import token_value
 from jsonobject import *
 import requests
 import math
-
-Token = token_value.API_TOKEN
-
-headers = {
-    'accept' : 'application/json',
-    'authorization' : Token
-}
+import DBmanager
+import datetime
 
 url = 'https://developer-lostark.game.onstove.com/auctions/items'
 
@@ -77,49 +72,71 @@ class SearchEngine():
             basic_search_option['ItemGrade'] = container.grade[0]
         return basic_search_option
     
-    def get_search_results(self):
-        url = 'https://developer-lostark.game.onstove.com/auctions/items'
-        
-        if self.totalItemNum == -1:
-            response = requests.post(url, headers=headers, json=self.make_search_option())
-            try:
-                self.totalItemNum = response.json().get(ResponseJsonTagType.totalCount)
-                self.totalPageIndex = math.ceil(self.totalItemNum/self.loaPageSize)
-            except Exception as e:
-                print('Error has occured in get_search_results : ', e)
+    def get_search_results(self):        
+        api_list = DBmanager.get_valid_api(DBmanager.DBManager().get_user_api(self.container.userid))
         rst = []
-        curPageIndex = 0
-        curItemIndex = 0
-        if self.totalItemNum != 0:
-            self.curPageIndex, self.curItemIndex = self.get_next_index()
-            if self.curPageIndex == None or self.curItemIndex == None:
-                return []
-            for curPageIndex in range(self.curPageIndex, self.totalPageIndex):    
-                response = requests.post(url, headers=headers, json=self.make_search_option(pageNum=curPageIndex+1))
-                if response.status_code == 200:
-                    json = response.json()
-                    items = json.get(ResponseJsonTagType.items)
-                    
-                    for curItemIndex in range(self.curItemIndex, len(items)):
-                        if self.subEngraveList == [] and not items[curItemIndex] in rst:
-                            rst.append(items[curItemIndex])
-                        else:
-                            item_options = items[curItemIndex].get(AuctionItemTagType.options)
-                            for option in item_options:
-                                if option.get(ItemOptionTagType.type) == ItemOptionTagType.engrave and option.get(ItemOptionTagType.optionName) in self.subEngraveList and not items[curItemIndex] in rst:
-                                    if int(option.get(ItemOptionTagType.values)) >= self.container.subEngraveMin and int(option.get(ItemOptionTagType.values)) <= self.container.subEngraveMax:
-                                        rst.append(items[curItemIndex])
-                                        break
-                        if len(rst) >= self.botPageSize:
-                            self.curPageIndex = curPageIndex
-                            self.curItemIndex = curItemIndex
-                            return rst
-                elif response.status_code == 429: # too much requests
-                    raise Exception("API Requests has exceeded limits.")
-        
-        self.curPageIndex = curPageIndex
-        self.curItemIndex = curItemIndex
-        return rst
+        if len(api_list) == 0:
+            return rst
+
+        for api in api_list:
+
+            getNextAPI = False
+            headers = {
+                'accept' : 'application/json',
+                'authorization' : 'bearer ' + api[DBmanager.APITag.key]
+            }
+
+
+            if self.totalItemNum == -1:
+                response = requests.post(url, headers=headers, json=self.make_search_option())
+                if response.status_code == 429:
+                    getNextAPI = True
+                elif response.status_code == 200:
+                    try:
+                        self.totalItemNum = response.json().get(ResponseJsonTagType.totalCount)
+                        self.totalPageIndex = math.ceil(self.totalItemNum/self.loaPageSize)
+                    except Exception as e:
+                        print('Error has occured in get_search_results : ', e)
+            curPageIndex = 0
+            curItemIndex = 0
+            if self.totalItemNum != -1 and self.totalItemNum != 0:
+                self.curPageIndex, self.curItemIndex = self.get_next_index()
+                if self.curPageIndex == None or self.curItemIndex == None:
+                    return []
+                for curPageIndex in range(self.curPageIndex, self.totalPageIndex):    
+                    response = requests.post(url, headers=headers, json=self.make_search_option(pageNum=curPageIndex+1))
+                    if response.status_code == 429:
+                        getNextAPI = True
+                        break
+                    elif response.status_code == 200:
+                        json = response.json()
+                        items = json.get(ResponseJsonTagType.items)
+                        
+                        for curItemIndex in range(self.curItemIndex, len(items)):
+                            if self.subEngraveList == [] and not items[curItemIndex] in rst:
+                                rst.append(items[curItemIndex])
+                            else:
+                                item_options = items[curItemIndex].get(AuctionItemTagType.options)
+                                for option in item_options:
+                                    if option.get(ItemOptionTagType.type) == ItemOptionTagType.engrave and option.get(ItemOptionTagType.optionName) in self.subEngraveList and not items[curItemIndex] in rst:
+                                        if int(option.get(ItemOptionTagType.values)) >= self.container.subEngraveMin and int(option.get(ItemOptionTagType.values)) <= self.container.subEngraveMax:
+                                            rst.append(items[curItemIndex])
+                                            break
+                            if len(rst) >= self.botPageSize:
+                                self.curPageIndex = curPageIndex
+                                self.curItemIndex = curItemIndex
+                                return rst
+                    elif response.status_code == 429: # too much requests
+                        raise Exception("API Requests has exceeded limits.")
+            if getNextAPI:
+                valid_time = datetime.datetime.now() + datetime.timedelta(seconds=60)
+                time_str = valid_time.strftime("%Y-%m-%d %H:%M:%S")
+                print("Change API valid time. ", time_str)
+                api[DBmanager.APITag.valid_time] = time_str
+                continue
+            self.curPageIndex = curPageIndex
+            self.curItemIndex = curItemIndex
+            return rst
     
     def isFirstResult(self):
         return self.curItemIndex == 0 and self.curPageIndex == 0
@@ -131,7 +148,7 @@ class SearchEngine():
         print('cur index : ', (self.curPageIndex, self.curItemIndex))
         if self.curPageIndex == 0 and self.curItemIndex == 0:
             return (0,0)
-        elif ((self.curPageIndex)*self.loaPageSize + self.curItemIndex+1) == self.totalItemNum: # 마지막 아이템
+        elif self.curPageIndex == self.totalPageIndex and (self.curItemIndex+1) == (self.totalItemNum % self.loaPageSize):
             return (None, None)
         elif self.curItemIndex == (self.loaPageSize - 1): # 한 페이지 마지막 아이템
             return (self.curPageIndex+1, 0)
