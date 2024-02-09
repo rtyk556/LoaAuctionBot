@@ -13,7 +13,7 @@ headers = {
 url = 'https://developer-lostark.game.onstove.com/auctions/items'
 
 class SearchEngine():
-    def __init__(self, container):
+    def __init__(self, container:SearchOptionContainer):
         self.container = container
         self.subEngraveList = []
         self.totalItemNum = -1
@@ -107,8 +107,9 @@ class SearchEngine():
                             item_options = items[curItemIndex].get(AuctionItemTagType.options)
                             for option in item_options:
                                 if option.get(ItemOptionTagType.type) == ItemOptionTagType.engrave and option.get(ItemOptionTagType.optionName) in self.subEngraveList and not items[curItemIndex] in rst:
-                                    rst.append(items[curItemIndex])
-                                    break
+                                    if int(option.get(ItemOptionTagType.values)) >= self.container.subEngraveMin and int(option.get(ItemOptionTagType.values)) <= self.container.subEngraveMax:
+                                        rst.append(items[curItemIndex])
+                                        break
                         if len(rst) >= self.botPageSize:
                             self.curPageIndex = curPageIndex
                             self.curItemIndex = curItemIndex
