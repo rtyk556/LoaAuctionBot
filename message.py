@@ -208,6 +208,8 @@ class NotificationDeleteView(discord.ui.View):
     super().__init__()
     presetOptions = []
     self.preset_list = presetList
+    for option in self.select_delete_preset.options:
+      option.default = False
 
     description_txt = ''
     idx = 0
@@ -324,22 +326,21 @@ class APIDeleteView(discord.ui.View):
     apiOptions=[]
     for api in apiList:
       apiOptions.append(discord.SelectOption(
-        label=api.get(DBmanager.APITag.label)
+        label=api.get(DBmanager.APITag.label),
+        default=False
       ))
     self.select_delete_API.options = apiOptions
   
   @discord.ui.select(placeholder="API 라벨")
-  async def select_delete_API(self, interaction:discord.Interaction, select: discord.ui.Select):
-    for option in self.select_delete_API.options:
-      option.default = False
-    
+  async def select_delete_API(self, interaction:discord.Interaction, select: discord.ui.Select):    
     self.delete_list = select.values
     
     options = self.select_delete_API.options
     for i in range(len(options)):
       if options[i].label in select.values:
         options[i].default = True
-    
+      else:
+        options[i].default = False
     self.select_delete_API.options = options
     await interaction.response.edit_message(embed=self.embed, view=self)
   
@@ -362,6 +363,8 @@ class NotiAcceTypeView(discord.ui.View):
     def __init__(self, container):
       super().__init__()
       self.container = container
+      for option in self.select_acce_type.options:
+          option.default = False
     
     @discord.ui.select(placeholder="장신구 종류",
                        min_values=1, max_values=1,
@@ -427,6 +430,10 @@ class NotiMainOptView(discord.ui.View):
     self.container = container
     self.input_engrave = self.search_engrave(engrave)
     self.embed=discord.Embed.from_dict(get_main_opt_message(self.input_engrave))
+    for option in self.select_minEngrave.options:
+      option.default = False
+    for option in self.select_maxEngrave.options:
+      option.default = False
   
   def search_engrave(self, engrave):
     # 각인 값을 입력받고 스페이스 제거 후에 jsonobject에 있는지 확인
@@ -465,15 +472,14 @@ class NotiMainOptView(discord.ui.View):
                               label="6",
                           ),
                        ])
-  async def select_minEngrave(self, interaction, select):
-    for option in self.select_minEngrave.options:
-      option.default = False
-    
+  async def select_minEngrave(self, interaction, select):   
     if len(select.values) != 0:
       self.container.mainEngraveMin = int(select.values[0])
       for option in self.select_minEngrave.options:
         if option.label == select.values[0]:
           option.default = True
+        else: 
+          option.default = False
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="각인 최대값",
@@ -492,15 +498,14 @@ class NotiMainOptView(discord.ui.View):
                               label="6",
                           ),
                        ])
-  async def select_maxEngrave(self, interaction, select):
-    for option in self.select_maxEngrave.options:
-      option.default = False
-      
+  async def select_maxEngrave(self, interaction, select):      
     if len(select.values) != 0:
       self.container.mainEngraveMax = int(select.values[0])
       for option in self.select_maxEngrave.options:
         if option.label == select.values[0]:
           option.default = True
+        else:
+          option.default = False
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
@@ -530,6 +535,14 @@ class NotiEtcOptView(discord.ui.View):
     self.container = container
     self.embed = discord.Embed.from_dict(get_etc_opt_message(self.search_engraves(subEngrave)))
     self.select_subStat.disabled = not(self.container.isNecklace())
+    for option in self.select_minEngrave.options:
+      option.default = False
+    for option in self.select_maxEngrave.options:
+      option.default = False
+    for option in self.select_mainStat.options:
+      option.default = False
+    for option in self.select_subStat.options:
+      option.default = False
     
   def search_engraves(self, engraves:list):
     # 각인 값들을 입력받고 스페이스 제거 후에 jsonobject에 있는지 확인
@@ -572,15 +585,14 @@ class NotiEtcOptView(discord.ui.View):
                               label="6",
                           ),
                        ])
-  async def select_minEngrave(self, interaction, select):
-    for option in self.select_minEngrave.options:
-      option.default = False
-    
+  async def select_minEngrave(self, interaction, select):    
     if len(select.values) != 0:
       self.container.subEngraveMin = int(select.values[0])
       for option in self.select_minEngrave.options:
         if option.label == select.values[0]:
           option.default = True
+        else:
+          option.default = False
     else:
       self.container.subEngraveMin = 3
     await interaction.response.edit_message(embed=self.embed, view=self)
@@ -601,15 +613,14 @@ class NotiEtcOptView(discord.ui.View):
                               label="6",
                           ),
                        ])
-  async def select_maxEngrave(self, interaction, select):
-    for option in self.select_maxEngrave.options:
-      option.default = False
-      
+  async def select_maxEngrave(self, interaction, select):     
     if len(select.values) != 0:
       self.container.subEngraveMax = int(select.values[0])
       for option in self.select_maxEngrave.options:
         if option.label == select.values[0]:
           option.default = True
+        else:
+          option.default = False
     else:
       self.container.subEngraveMax = 6
     await interaction.response.edit_message(embed=self.embed, view=self)
@@ -636,16 +647,15 @@ class NotiEtcOptView(discord.ui.View):
                               label="숙련",
                           )
                        ])
-  async def select_mainStat(self, interaction, select):
-    for option in self.select_mainStat.options:
-      option.default = False
-    
+  async def select_mainStat(self, interaction, select):    
     if len(select.values) != 0:
       rst = [ stat.get(TagType.codeValue) for stat in stat if select.values[0] == stat.get(TagType.text)]
       if len(rst) != 0:
         for option in self.select_mainStat.options:
           if option.label == select.values[0]:
             option.default = True
+          else:
+            option.default = False
         self.container.mainStat = rst[0]
       else:
         raise IndexError("Main Stat result is not found in EtcOptView")
@@ -673,16 +683,15 @@ class NotiEtcOptView(discord.ui.View):
                               label="숙련",
                           )
                        ])
-  async def select_subStat(self, interaction, select):
-    for option in self.select_subStat.options:
-      option.default = False
-    
+  async def select_subStat(self, interaction, select):   
     if len(select.values) != 0:
       rst = [ stat.get(TagType.codeValue) for stat in stat if select.values[0] == stat.get(TagType.text)]
       if len(rst) != 0:
         for option in self.select_subStat.options:
           if option.label == select.values[0]:
             option.default = True
+          else:
+            option.default = False
         self.container.subStat = rst[0]
       else:
         raise IndexError("Sub Stat result is not found in EtcOptView")
@@ -739,7 +748,16 @@ class Noti2ndEtcOptView(discord.ui.View):
   def __init__(self, container):
     super().__init__()
     self.container = container
-  
+    for option in self.select_quality.options:
+      option.default = False
+    for i in range(len(self.select_item_grade.options)):
+      self.select_item_grade.options[i].default = False
+    for option in self.select_sort_option.options:
+      if option.value == SortOptionType.bidPrice:
+        option.default = False
+      else:
+        option.default = True
+
   @discord.ui.select(placeholder="품질",
                        min_values=1, max_values=1,
                        options=[
@@ -765,14 +783,13 @@ class Noti2ndEtcOptView(discord.ui.View):
                           )
                        ])
   async def select_quality(self, interaction, select):
-    for option in self.select_quality.options:
-      option.default = False
-    
     if len(select.values) != 0:
       self.container.quality = select.values[0]
       for option in self.select_quality.options:
         if option.value == select.values[0]:
           option.default = True
+        else:
+            option.default = False
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="아이템 등급 (복수 선택 가능)",
@@ -788,14 +805,13 @@ class Noti2ndEtcOptView(discord.ui.View):
                           )
                        ])
   async def select_item_grade(self, interaction, select):
-    for i in range(len(self.select_item_grade.options)):
-      self.select_item_grade.options[i].default = False
-    
     if len(select.values) != 0:
       self.container.grade = select.values
       for i in range(len(self.select_item_grade.options)):
         if self.select_item_grade.options[i].label in select.values:
           self.select_item_grade.options[i].default = True
+        else:
+          self.select_item_grade.options[i].default = False
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="정렬 기준",
@@ -812,10 +828,9 @@ class Noti2ndEtcOptView(discord.ui.View):
                           )
                        ])
   async def select_sort_option(self, interaction, select):
-    for option in self.select_sort_option.options:
-      option.default = False
-    
     if len(select.values) != 0:
+      for option in self.select_sort_option.options:
+        option.default = True
       self.container.sort_option = select.values[0]
       if select.values[0] == SortOptionType.bidPrice:
         self.select_sort_option.options[0].default = True
