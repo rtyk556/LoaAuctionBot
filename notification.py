@@ -43,4 +43,4 @@ async def send_rst_dm(bot:commands.Bot, user, rst):
         await user.dm_channel.send(content=f'알림 설정 매물 발견! \n', embed=embed)
     else:
         channel = await user.create_dm()
-        await channel.send(content=f'첫 알림 - 알림 설정 매물 발견! \n', embed=embed)
+        await channel.send(content=f'알림 설정 매물 발견! \n', embed=embed)

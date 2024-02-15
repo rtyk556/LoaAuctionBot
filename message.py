@@ -218,9 +218,9 @@ class NotificationDeleteView(discord.ui.View):
       subengraves = preset[DBmanager.PresetTag.search_option][1]
       option = SearchOptionParser(search_option)
       if len(option.engrave) == 1:
-        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{subengraves}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이상\n'
+        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{subengraves}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이하\n'
       elif len(option.engrave) == 2:
-        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{option.engrave[1][0]}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이상\n'
+        description_txt += f'{idx+1}. 등급-{option.grade} 종류-{option.acceType}, 스탯-{option.stats}, 각인-{option.engrave[0][0]}, 서브각인-{option.engrave[1][0]}, {option.sort} {preset[DBmanager.PresetTag.condition]} 이하\n'
       presetOptions.append(discord.SelectOption(
         label=f'{idx+1}번',
         value=idx
