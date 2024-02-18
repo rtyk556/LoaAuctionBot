@@ -4,31 +4,18 @@ from searchengine import SearchEngine, get_preset_result
 import discord
 from jsonobject import AuctionItemTagType, ItemOptionTagType, AuctionInfoTagType
 
+import requests
+
 @tasks.loop(seconds=60)
 async def noti_loop(bot:commands.Bot):
-    dbmanger = DBManager()
-    users = dbmanger.get_all_users()
+    response = requests.get('http://localhost:5000/api/noti')
     
-    for user_idx in range(len(users)):
-        # preset 존재하는지 확인
-        # 추후엔 길드가 봇에게 있는 길드인지 확인
-        if len(users[user_idx].get(DBDataTag.preset)) != 0:
-            # check api validity
-            api_list = get_valid_api(users[user_idx].get(DBDataTag.api))
-            if len(api_list) == 0:
-                continue
-            
-            user_presets = users[user_idx].get(DBDataTag.preset)
-            
-            for preset_idx in range(len(user_presets)):
-                noti_rst = get_preset_result(user_presets[preset_idx], api_list)
-                if len(noti_rst) != 0:
-                    await send_rst_dm(bot, users[user_idx], noti_rst)
-            
-            users[user_idx][DBDataTag.api] = api_list
-            users[user_idx][DBDataTag.preset] = user_presets
-            
-    dbmanger.save_user_info(users)
+    if response.status_code == 200:
+       noti_list = response.json()
+       for noti in noti_list:
+          await send_rst_dm(bot, noti[0], noti[1])      
+    else:
+       raise Exception('Cannot get response from api')
 
 async def send_rst_dm(bot:commands.Bot, user, rst):
     user = await bot.fetch_user(user.get(DBDataTag.user_id))
@@ -56,4 +43,4 @@ async def send_rst_dm(bot:commands.Bot, user, rst):
         await user.dm_channel.send(content=f'알림 설정 매물 발견! \n', embed=embed)
     else:
         channel = await user.create_dm()
-        await channel.send(content=f'첫 알림 - 알림 설정 매물 발견! \n', embed=embed)
+        await channel.send(content=f'알림 설정 매물 발견! \n', embed=embed)
