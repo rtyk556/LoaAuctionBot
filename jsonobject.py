@@ -6,14 +6,14 @@ class SearchOptionContainer():
      self.userid = None
      self.acceType = None
      self.mainEngrave = None
-     self.mainEngraveMin = 3
-     self.mainEngraveMax = 6
+     self.mainEngraveMin = None
+     self.mainEngraveMax = None
      self.subEngraves = []
-     self.subEngraveMin = 3
-     self.subEngraveMax = 6
+     self.subEngraveMin = None
+     self.subEngraveMax = None
      self.mainStat = None
      self.subStat = None
-     self.quality = ItemGradeQuality.over50
+     self.quality = None
      self.grade = []
      self.sort_option = SortOptionType.buyPrice
   
@@ -606,6 +606,8 @@ penaltyEngrave = [
           "Class": ""
         }
 ]
+
+totalEngraves = classEngrave + publicEngrave + penaltyEngrave
 
 stat = [
         {
