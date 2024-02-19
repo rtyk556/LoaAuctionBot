@@ -227,6 +227,7 @@ class NotificationDeleteView(discord.ui.View):
       ))
       idx += 1
     self.select_delete_preset.options = presetOptions
+    self.select_delete_preset.max_values = len(presetOptions)
     self.embed.description = description_txt
 
   @discord.ui.select(placeholder="알림 프리셋")
@@ -239,12 +240,10 @@ class NotificationDeleteView(discord.ui.View):
       d_list.append(self.preset_list[int(presetIdx)])
     self.delete_list = d_list
     
-    options = self.select_delete_preset.options
-    for i in range(len(options)):
-      if options[i].value in select.values:
-        options[i].default = True
+    for option in self.select_delete_preset.options:
+      if str(option.value) in select.values:
+        option.default = True
     
-    self.select_delete_preset.options = options
     await interaction.response.edit_message(embed=self.embed, view=self)
   
   @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.red)
