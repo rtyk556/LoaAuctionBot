@@ -145,18 +145,21 @@ class FirstView(discord.ui.View):
   @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
   async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = APIView()
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
   @discord.ui.button(label='알림 목록', style=discord.ButtonStyle.primary)
   async def button_notification_lists(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = NotificationListView(interaction.user.id)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
     self.container.userid = interaction.user.id
     view = NotiAcceTypeView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class NotificationListView(discord.ui.View):
   embed = discord.Embed(title="등록된 알림 설정 목록")
@@ -186,19 +189,18 @@ class NotificationListView(discord.ui.View):
       text += '-----------------------------------\n'
 
     self.embed.description = text
-    # userid에 등록된 preset 목록은 embed로 보여줌
-    # 프리셋 삭제 버튼, 처음으로 버튼
-    # 프리셋 삭제 버튼 누르면 새로운 view로 삭제할 프리셋 선택
 
   @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.primary)
   async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
     view=NotificationDeleteView(self.presets)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class NotificationDeleteView(discord.ui.View):
   embed = discord.Embed(title="삭제할 프리셋 선택", description="삭제할 프리셋을 선택하고 삭제 버튼을 눌러주세요.")
@@ -244,7 +246,8 @@ class NotificationDeleteView(discord.ui.View):
       if str(option.value) in select.values:
         option.default = True
     
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.red)
   async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -258,7 +261,8 @@ class NotificationDeleteView(discord.ui.View):
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class APIView(discord.ui.View):
     embed = discord.Embed.from_dict(api_message)
@@ -268,7 +272,8 @@ class APIView(discord.ui.View):
     @discord.ui.button(label='API 조회', style=discord.ButtonStyle.primary)
     async def button_check_api(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = APICheckView(interaction.user.id)
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
     @discord.ui.button(label='API 등록', style=discord.ButtonStyle.primary)
     async def button_register_api(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -278,7 +283,8 @@ class APIView(discord.ui.View):
     @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
     async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
         view = FirstView()
-        await interaction.response.edit_message(embed=view.embed, view=view)
+        await interaction.response.defer()
+        await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class APIRegisterModal(discord.ui.Modal, title="API 등록"):
   label = discord.ui.TextInput(label="라벨명을 입력해 주세요. ", placeholder="기존에 등록된 API 라벨명과 달라야 합니다.")
@@ -310,12 +316,14 @@ class APICheckView(discord.ui.View):
   @discord.ui.button(label='API 삭제', style=discord.ButtonStyle.primary)
   async def button_delete_api(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = APIDeleteView(self.curAPI)
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class APIDeleteView(discord.ui.View):
   embed = discord.Embed(title="삭제할 API 선택", description='삭제할 API를 선택하고 삭제 버튼을 눌러주세요')
@@ -341,7 +349,8 @@ class APIDeleteView(discord.ui.View):
       else:
         options[i].default = False
     self.select_delete_API.options = options
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.button(label='API 삭제', style=discord.ButtonStyle.red)
   async def button_delete_api(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -355,7 +364,8 @@ class APIDeleteView(discord.ui.View):
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
 class NotiAcceTypeView(discord.ui.View):
     embed = discord.Embed.from_dict(select_acce_type_message)
@@ -409,22 +419,26 @@ class NotiAcceTypeView(discord.ui.View):
         elif int(value) == AccessoryType.ring:
           self.select_acce_type.options[2].default = True
       self.button_next.disabled = self.is_next_disabled()
-      await interaction.response.edit_message(embed=self.embed, view=self)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
     
     @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
     async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
     @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
     async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = NotiMainOptView(self.container)
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
     @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
     async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
       view = FirstView()
-      await interaction.response.edit_message(embed=view.embed, view=view)
+      await interaction.response.defer()
+      await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class NotiMainOptView(discord.ui.View):
   embed = discord.Embed.from_dict(get_main_opt_message())
@@ -501,7 +515,8 @@ class NotiMainOptView(discord.ui.View):
         else: 
           option.default = False
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="각인 최대값",
                        min_values=1, max_values=1,
@@ -530,7 +545,8 @@ class NotiMainOptView(discord.ui.View):
         else:
           option.default = False
     self.button_next.disabled = self.is_next_disabled() 
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
   async def button_main_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -540,17 +556,20 @@ class NotiMainOptView(discord.ui.View):
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = NotiAcceTypeView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
   async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = NotiEtcOptView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = FirstView()
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class NotiEtcOptView(discord.ui.View):
   embed = discord.Embed.from_dict(get_etc_opt_message())
@@ -644,7 +663,8 @@ class NotiEtcOptView(discord.ui.View):
         else:
           option.default = False
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="각인 최대값",
                        min_values=0, max_values=1,
@@ -672,7 +692,8 @@ class NotiEtcOptView(discord.ui.View):
         else:
           option.default = False
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="스탯",
                        min_values=1, max_values=1,
@@ -711,7 +732,8 @@ class NotiEtcOptView(discord.ui.View):
         else:
           option.default = False
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="목걸이용 서브 스탯",
                        min_values=1, max_values=1,
@@ -750,7 +772,8 @@ class NotiEtcOptView(discord.ui.View):
         else:
           option.default = False
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.button(label='각인 입력하기', style=discord.ButtonStyle.green)
   async def button_sub_engrave(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -760,17 +783,20 @@ class NotiEtcOptView(discord.ui.View):
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = NotiMainOptView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
   async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = Noti2ndEtcOptView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = FirstView()
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class EtcOptModal(discord.ui.Modal, title="서브 각인"):
   sub_1 = discord.ui.TextInput(label="서브 각인 1", required=False, placeholder="검색에 포함될 서브 각인을 입력해 주세요.")
@@ -784,7 +810,8 @@ class EtcOptModal(discord.ui.Modal, title="서브 각인"):
   async def on_submit(self, interaction: discord.Interaction):
     subEngrave_list = [self.sub_1.value, self.sub_2.value, self.sub_3.value]
     view = NotiEtcOptView(self.container, subEngrave=[x for x in subEngrave_list if x != ""])
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class MainOptModal(discord.ui.Modal, title="메인 각인"):
     mainEngrave = discord.ui.TextInput(label="메인 옵션을 입력해 주세요.", placeholder="검색에 반드시 포함될 메인 각인을 입력해 주세요.")
@@ -795,7 +822,8 @@ class MainOptModal(discord.ui.Modal, title="메인 각인"):
 
     async def on_submit(self, interaction: discord.Interaction):
         view = NotiMainOptView(self.container, engrave=self.mainEngrave.value)
-        await interaction.response.edit_message(embed=view.embed, view=view)
+        await interaction.response.defer()
+        await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
 class Noti2ndEtcOptView(discord.ui.View):
   embed = discord.Embed.from_dict(etc_2nd_option_message)
@@ -861,7 +889,8 @@ class Noti2ndEtcOptView(discord.ui.View):
         else:
           option.default = False
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="아이템 등급 (복수 선택 가능)",
                        min_values=1, max_values=1,
@@ -891,7 +920,8 @@ class Noti2ndEtcOptView(discord.ui.View):
         else:
           option.default = False
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.select(placeholder="정렬 기준",
                        min_values=1, max_values=1,
@@ -915,22 +945,26 @@ class Noti2ndEtcOptView(discord.ui.View):
       elif select.values[0] == SortOptionType.buyPrice:
         self.select_sort_option.options[1].default = True
     self.button_next.disabled = self.is_next_disabled()
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.button(label='<--', style=discord.ButtonStyle.primary)
   async def button_prev(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = NotiEtcOptView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='-->', style=discord.ButtonStyle.primary)
   async def button_next(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = OptionResultView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = FirstView()
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class OptionResultView(discord.ui.View):  
   def __init__(self, container):
@@ -964,12 +998,14 @@ class OptionResultView(discord.ui.View):
   @discord.ui.button(label='검색', style=discord.ButtonStyle.green)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = SearchResultView(self.container)
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
   async def button_home(self, interaction: discord.Interaction, button: discord.ui.Button):
     view = FirstView()
-    await interaction.response.edit_message(embed=view.embed, view=view)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class SearchResultView(discord.ui.View):
   def __init__(self, container):
@@ -1050,7 +1086,8 @@ class SearchResultView(discord.ui.View):
       self.button_prev_rst.disabled=True
     if self.engine.isLastResult():
       self.button_next_rst.disabled = True
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
   
   @discord.ui.button(label='다음 검색 결과', style=discord.ButtonStyle.primary)
   async def button_next_rst(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -1059,7 +1096,8 @@ class SearchResultView(discord.ui.View):
     self.button_prev_rst.disabled = False
     if self.engine.isLastResult():
       self.button_next_rst.disabled = True
-    await interaction.response.edit_message(embed=self.embed, view=self)
+    await interaction.response.defer()
+    await interaction.followup.edit_message(message_id=interaction.message.id, embed=self.embed, view=self)
 
   
 class NotificationModal(discord.ui.Modal, title="알림 조건 가격"):
