@@ -144,21 +144,21 @@ class FirstView(discord.ui.View):
 
   @discord.ui.button(label='API키', style=discord.ButtonStyle.primary)
   async def button_api(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = APIView()
     await interaction.response.defer()
+    view = APIView()
     await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
   @discord.ui.button(label='알림 목록', style=discord.ButtonStyle.primary)
   async def button_notification_lists(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = NotificationListView(interaction.user.id)
     await interaction.response.defer()
+    view = NotificationListView(interaction.user.id)
     await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
   
   @discord.ui.button(label='매물 검색', style=discord.ButtonStyle.primary)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
+    await interaction.response.defer()
     self.container.userid = interaction.user.id
     view = NotiAcceTypeView(self.container)
-    await interaction.response.defer()
     await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
 class NotificationListView(discord.ui.View):
@@ -192,8 +192,8 @@ class NotificationListView(discord.ui.View):
 
   @discord.ui.button(label='프리셋 삭제', style=discord.ButtonStyle.primary)
   async def button_delete_preset(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view=NotificationDeleteView(self.presets)
     await interaction.response.defer()
+    view=NotificationDeleteView(self.presets)
     await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
     
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
@@ -997,8 +997,8 @@ class OptionResultView(discord.ui.View):
   
   @discord.ui.button(label='검색', style=discord.ButtonStyle.green)
   async def button_search(self, interaction: discord.Interaction, button: discord.ui.Button):
-    view = SearchResultView(self.container)
     await interaction.response.defer()
+    view = SearchResultView(self.container)
     await interaction.followup.edit_message(message_id=interaction.message.id, embed=view.embed, view=view)
 
   @discord.ui.button(label='처음 화면으로', style=discord.ButtonStyle.primary)
