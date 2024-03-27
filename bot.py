@@ -22,7 +22,8 @@ bot = AuctionBot('>', intents=intents)
 @bot.event
 async def on_ready():
     print('Start Auction Bot')
-    notification.noti_loop.start(bot)
+    if not notification.noti_loop.is_running():
+        notification.noti_loop.start(bot)
 
 @bot.tree.command(name='start', description='경매장 봇 명령어 테스트')
 async def start(interaction:discord.Interaction):
